@@ -27,6 +27,9 @@
     <link href="c.css" rel="stylesheet" />
   </head>
   <body>
+  <a href="#post" class="skip_link" accesskey="3" tabindex="0">
+  <span title="Access Key 3">Skip to main content</span>
+  </a>
     <main>
     <h1 id="top" class="h">
       <!-- Page title H1 from YAML -->
@@ -76,7 +79,7 @@
       </details>
     </xsl:if>
     <!-- Main content <section> per heading (nested) -->
-    <article class="no_outline" tabindex="-1" accesskey="3">
+    <article id="post" class="no_outline" tabindex="-1" accesskey="3">
       <xsl:choose>
         <xsl:when test="$has-headers = 'true'">
           <!-- Skip lead content. process from first header -->

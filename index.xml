@@ -14,28 +14,27 @@ version: 2025-08-28
 
 *Early work in progress and proof of concept.*
 
-This project parses Markdown to HTML on page load without using JavaScript. 
-
-The folder structure looks like this:
-```
-- page.xml   Markdown between two lines of XML
-- 0.xsl      The parser used by all pages
-- c.css      An optional style sheet
-```
+This project parses Markdown to HTML on page load using XSLT. No JS.
 
 # Structure
+## Folder
+```
+- page.xml   Holds markdown between two lines of XML
+- 0.xsl      Converts each page to HTML
+- c.css      Styles pages (optional)
+```
+
 ## Markup
 - Markdown may start with a YAML block.
 - Content may occur after YAML before any first heading.
 
 ## Output
-- Document (Browser tab) title - Any YAML `name` property given.
--- Page title: Same as document title.
--- Intro: Any content before first heading found in markup.
--- Map: Table of Contents (If page has headings).
--- Article
---- One section per heading and its content.
--- Footer
+- Name: Set via YAML `name` property value
+- Lead: Any content before first heading found in markup.
+- Map: Table of Contents (If page has headings).
+- Main:
+-- One section per heading and its content.
+- Footer
 
 # Tests
 The markup for this page includes tests for the parser.

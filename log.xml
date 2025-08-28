@@ -23,6 +23,10 @@ Stops adding header-looking lines from code blocks to TOC
 Lets keyboard navigation focus on anchor links
 Adds access keys: 1 top, 2 menu, 3 main
 Put any content before the first markup header in a lead section
+Names project SKIP
+Uploads to GitHub
+Adds Skip Link to jump past header, map and preamble to content.
+Hides 'Alt' label on inline images.
 ```
 
 # 2025_0827
