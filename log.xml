@@ -1,0 +1,63 @@
+<?xml-stylesheet type="text/xsl" href="0.xsl"?><x>
+<!-- 
+Project: Markdown to HTML via XSLT
+Copyright 2025 Greg Abbott 
+V1 2025_0826
+V 2025_0828
+-->
+---
+name: Change Log
+note: Newest at top
+---
+[[index|Home]]
+
+
+# 2025_0828
+```
+Toggles map visibility with keyboard
+Adds DOCTYPE html to output avoid browsers using quirks mode
+Adds tables support via tables block and JSON arrays
+Processes Markdown and paragraphs within table cells
+Adds a project log and some items
+Stops adding header-looking lines from code blocks to TOC
+Lets keyboard navigation focus on anchor links
+Adds access keys: 1 top, 2 menu, 3 main
+Put any content before the first markup header in a lead section
+```
+
+# 2025_0827
+```
+Marks up blockquote with named code block instead of markdown
+  This approach works better when using XSLT as a parser
+  Supports inner paragraphs and inline tokens
+Joins touching text lines with ' ' to form one paragraph
+Recursively processes inline tokens (for example italic in bold)
+Adds visibility toggle for image alt text
+Rewrites and reorders the test page
+  Tweaks parser to pass more tests
+Adds keyboard tab navigation
+```
+# 2025_0826
+```
+Implements basic parser and test cases
+  Paragraphs
+  Inline tokens: bold, italic, strike-through
+  Header
+  Lists
+  Code blocks
+  Block quotes
+  Links: Markdown and wikilink styles
+  Images: Inline and block
+Adds features
+  Handles hash links to same and different pages
+  Handles absent link text for both link styles
+  Adds anchor links to headings
+  Makes a table of contents from headings
+  Presents table of contents in hide and show menu
+  Adds inline footnotes
+  Structures page into sections based on headings and levels
+  Adds YAML front matter to MD docs
+  Parses 'name' property in YAML for page title
+```
+</x>
+

@@ -1,0 +1,240 @@
+<?xml-stylesheet type="text/xsl" href="0.xsl"?><x>
+<!-- 
+Project: Markdown to HTML via XSLT
+Copyright 2025 Greg Abbott 
+V1 2025_0826
+V 2025_0828
+-->
+---
+name: XSLT Markdown Processor
+version 1: 2025-08-26
+version: 2025-08-28
+---
+[[log|Change Log]]
+
+*Early work in progress and proof of concept.*
+
+This project parses Markdown to HTML on page load without using JavaScript. 
+
+The folder structure looks like this:
+```
+- page.xml   Markdown between two lines of XML
+- 0.xsl      The parser used by all pages
+- c.css      An optional style sheet
+```
+
+# Structure
+## Markup
+- Markdown may start with a YAML block.
+- Content may occur after YAML before any first heading.
+
+## Output
+- Document (Browser tab) title - Any YAML `name` property given.
+-- Page title: Same as document title.
+-- Intro: Any content before first heading found in markup.
+-- Map: Table of Contents (If page has headings).
+-- Article
+--- One section per heading and its content.
+-- Footer
+
+# Tests
+The markup for this page includes tests for the parser.
+The parser outputs HTML that shows supported features.
+
+## Keyboard
+- Tab key should navigate the page (subject to browser config)
+- Access keys should jump to page sections
+-- 1: Top
+-- 2: Toggle Map
+-- 3: Start of post
+
+## Links
+### Regular
+- External:
+-- Raw link (URL without markup): https://example.com
+-- With link text [Example](https://example.com)
+-- Without link text [](https://example.com)
+--- Extracts domain from URL for link text.
+- Same site
+-- Different page
+--- With text
+---- With extension [Change Log](log.xml)
+---- Without extension [Change Log](log)
+----- With with jump link [Section of interest](About#section of interest)
+--- Without link text
+---- With extension [](About.xml)
+---- Without extension [](Log)
+----- With jump link [](About#section of interest)
+- Same page (Jump link)
+-- With link text [Links](#Links)
+-- Without link text [](#Links)
+--- Both use the case given in the URL hash
+
+### Wikilinks
+- Different page
+-- Without custom link text
+--- One word page name: [[About]]
+--- [[Multi word page name]]
+--- Parse URL from any display case: [[Multi WORD page NAME]]
+--- With jump link [[About#section of interest|Section name]]
+-- With custom text name [[AbOuT|About this site]]
+- Same page (Jump links to section on the same page)
+-- Parse URL from any display case (handle spaces)
+--- [[#Text Formatting]]
+--- upper [[#TEXT FORMATTING]]
+--- lower [[#text formatting]]
+-- With [[#wikilinks|custom text for jump link]]
+
+## Footnotes
+Inline style only ^[Footnote text]. Handle long footnotes ^[Long footnotes should wrap. Their base should stay in the same position as they grow in height.]
+
+## Formatting
+Sequential: Normal text, **bold** text, *italic* text, ~~strike-through~~ text, `inline code` text, [link to about](about).
+
+Mixed: **bold and *italic* together** or ~~**bold strike-through**~~.
+
+
+
+## Headings
+The parser:
+- Generates url safe IDs for each heading.
+- Adds anchor link to each heading
+- Makes a Table of Contents if the markup has over one heading.
+
+```
+# 1 Hash Heading
+## 2 Hash Heading  
+### 3 Hash Heading
+#### 4 Hash Heading
+##### 5 Hash Heading
+###### 6 Hash Heading
+```
+
+## Lists
+
+### Unordered
+#### Flat
+- Item 1
+- Item 2 with *italic*.
+- Item 3 with **bold text**
+- Item 4 with `inline code`
+- Item 5
+
+#### Nested
+Instead of indents and whitespace,
+use N dashes to represent depth level in a list:
+
+
+- `-` 0 indents
+-- `--` 1 indent **bold**
+-- 1 indent *italic*
+--- `---` 2 indents ~~strike~~
+--- 2 indents
+---- `----` 3 indents [MD Link](#nested)
+-- 1 indent [[#nested|Wikilink]]
+- 0 indents
+
+### Ordered
+(And mixed content check)
+
+1. First **numbered** item 
+2. Second [numbered](#ordered lists) item
+3. `Third item` with *italic text*
+4. Fourth item with ~~strikethrough~~
+5. Fifth item
+
+### Tasks
+
+- [ ] Do `- [ ]`
+- [x] Done lowercase `- [x]`
+- [X] Done Uppercase `- [X]`
+- [ ] Handle **bold text** and inline tokens
+- [X] Task with `inline code`
+
+## Blocks
+### Quotes
+
+```blockquote
+Alternate block quote syntax to suit XSLT:
+
+- **Start** a block quote with:
+-- newline, 3 backticks, the string `blockquote`, newline.
+- **Content** Enter the content on lines after the open tag.
+- **End** the block quote with a line equal to 3 backticks.
+
+Block quotes may contain **bold text**, *italic text*, and `inline code`.
+
+Block quotes support multiple paragraphs.
+```
+
+### Code
+
+```
+const log = a => {
+  console.log(a)
+  return a
+}
+
+log(`hello`)
+```
+
+### HTML 
+HTML blocks clash with XML.
+Options include:
+
+- Write all angle brackets as ampersand codes
+- Wrap the content inside a code block with CDATA tags
+
+```
+&lt;p&gt;This version uses ampersand codes for angle brackets &lt;/p&gt;
+```
+
+```<![CDATA[<!DOCTYPE html>
+<html>
+<head>
+<title>This version escapes the block with CDATA</title>
+</head>
+<body>
+</body>
+</html>]]>
+```
+
+## Horizontal Rules
+
+3 dashes style:
+
+---
+
+3 asterisk style:
+
+***
+
+## Images
+### Alone
+
+![Alt text displays on clicking image](f.png)
+
+### Inline
+Before ![Alt text with inline image](smile.png) after.
+
+## Tables
+Via JSON array of arrays, in code block named 'table'.
+
+```table
+[
+  ["Feature","Example"],
+  ["Touching lines","Joins touching lines\nwith spaces."],
+  ["Paragraphs","Two linebreaks:\n\nseparate paragraphs."]
+  ["Inline Styles","Handle **bold** and *italic* etc."]
+  ["Links in Cells","Test [[about]] End Test"]
+]
+```
+
+## Empty Lines and Spacing
+
+Empty lines follow this line in the markup.
+
+
+
+This paragraph follows empty lines in the markup.
+</x>

@@ -1,0 +1,17 @@
+<?xml-stylesheet type="text/xsl" href="0.xsl"?><x>
+<!-- 
+Project: Markdown to HTML via XSLT
+Copyright 2025 Greg Abbott 
+V1 2025_0826
+V 2025_0828
+-->
+[[index|Home]]
+
+- The markup for this page has:
+-- No YAML block or name property.
+--- This tests the fallback title.
+-- No headers
+--- This tests if the parser outputs the correct structure:
+--- (It should not generate a 'lead' section, or a page map).
+
+</x>

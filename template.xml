@@ -1,0 +1,12 @@
+<?xml-stylesheet type="text/xsl" href="0.xsl"?><x>
+<!-- 
+Project: Markdown to HTML via XSLT
+Copyright 2025 Greg Abbott 
+V1 2025_0826
+V 2025_0828
+-->
+---
+name: Page Name Here
+---
+Markdown Here
+</x>
