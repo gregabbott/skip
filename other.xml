@@ -1,0 +1,32 @@
+<?xml-stylesheet type="text/xsl" href="0.xsl"?><x>
+<!-- 
+Project: Markdown to HTML via XSLT
+Copyright 2025 Greg Abbott 
+V1 2025_0826
+V 2025_0828
+-->
+---
+name: About
+---
+
+# Test
+This page tests how the parser handles markup with the following structure:
+
+```
+A YAML block
+No 'lead' content (anything before first markup heading)
+A markup heading
+```
+
+## Section of Interest
+```
+
+      o
+      |
+ o-( ^_^ )-o  Beep Boop
+   -|___|-
+     | |
+
+```
+
+</x>

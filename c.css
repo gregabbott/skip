@@ -73,6 +73,20 @@ main,footer {
   padding: 0 2ch;
   margin: 0 auto;
 }
+
+header nav {
+  padding: 1lh 0;
+}
+header nav ul {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 2ch;
+}
+header nav ul li {
+list-style-type: none;
+}
 footer {
   padding: .5lh 2ch;
   display: flex;
@@ -296,6 +310,9 @@ td p:last-of-type{
 .img_w_alt img {
   padding: 0;
   margin: 0;
+}
+.img_w_alt:hover span:first-of-type::before{
+  content:"Alt";
 }
 .img_w_alt:hover span:first-of-type{
   display: block;

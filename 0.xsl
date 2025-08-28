@@ -17,20 +17,29 @@
   <head>
   <meta charset="UTF-8" />
   <meta name="color-scheme" content="light dark" />
-   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="c.css" rel="stylesheet"/>
   <xsl:variable name="page-title">
     <xsl:call-template name="extract-yaml-title">
       <xsl:with-param name="text" select="."/>
     </xsl:call-template>
   </xsl:variable>
-  <title><xsl:value-of select="$page-title"/></title>
-    <link href="c.css" rel="stylesheet" />
+  <title>Skip - <xsl:value-of select="$page-title"/></title>
+    
   </head>
   <body>
   <a href="#post" class="skip_link" accesskey="3" tabindex="0">
   <span title="Access Key 3">Skip to main content</span>
   </a>
     <main>
+    <header>
+    <nav>
+    <ul>
+    <li><a href="index.xml">Skip</a></li>
+    <li><a href="log.xml">Log</a></li>
+    <li><a href="info.xml">Info</a></li>
+    </ul>
+    </nav>
     <h1 id="top" class="h">
       <!-- Page title H1 from YAML -->
       <xsl:call-template name="extract-yaml-title">
@@ -38,6 +47,7 @@
       </xsl:call-template>
         <a href="#top" accesskey="1">#</a>
     </h1>
+    </header>
     <!-- Get content after YAML frontmatter -->
     <xsl:variable name="content">
       <xsl:call-template name="remove-yaml-frontmatter">
@@ -1551,7 +1561,7 @@
         <xsl:variable name="footnote-text" select="substring-before(substring-after($text, '^['), ']')"/>
         <xsl:variable name="after-footnote" select="substring-after($text, ']')"/>
         <label class="f-n">
-          <input type="checkbox" name="f-n"/>
+          <input type="checkbox" hidden="hidden" name="f-n"/>
           <span></span><!-- ... -->
           <span><xsl:value-of select="$footnote-text"/></span>
         </label>
@@ -1602,10 +1612,10 @@
           <xsl:when test="normalize-space($alt-text) != ''">
             <span class="img_w_alt">
               <label>
-                <input name="i_a" type="checkbox" hidden="hidden"/>
-                <span>Alt</span>
-                <span><xsl:value-of select="$alt-text"/></span>
                 <img src="{$src}" alt="{$alt-text}"/>
+                <input name="i_a" type="checkbox" hidden="hidden"/>
+                <span></span><!--CSS contains text-->
+                <span><xsl:value-of select="$alt-text"/></span>
               </label>
             </span>
           </xsl:when>

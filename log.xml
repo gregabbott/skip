@@ -9,8 +9,7 @@ V 2025_0828
 name: Change Log
 note: Newest at top
 ---
-[[index|Home]]
-
+- Since: 2025-08-26
 
 # 2025_0828
 ```
@@ -27,6 +26,8 @@ Names project SKIP
 Uploads to GitHub
 Adds Skip Link to jump past header, map and preamble to content
 Hides 'Alt' label on inline images
+Adds site nav
+Improves image alt text span HTML to make sense in no-css mode
 ```
 
 # 2025_0827

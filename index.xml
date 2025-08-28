@@ -6,16 +6,12 @@ V1 2025_0826
 V 2025_0828
 -->
 ---
-name: Skip
+name: Markdown to HTML with XSLT
 version 1: 2025-08-26
 version: 2025-08-28
 ---
-[[log|Change Log]] | [[Info]]
-
-*Early work in progress and proof of concept.*
-
-Skip turns Markdown to HTML with an XSLT file.
 No JavaScript. No build. No dependencies.
+*Proof of concept.*
 
 # Structure
 ## Folder
@@ -61,11 +57,11 @@ The parser outputs HTML that shows supported features.
 --- With text
 ---- With extension [Change Log](log.xml)
 ---- Without extension [Change Log](log)
------ With with jump link [Section of interest](About#section of interest)
+----- With with jump link [Section of interest](Other#section of interest)
 --- Without link text
----- With extension [](About.xml)
+---- With extension [](Other.xml)
 ---- Without extension [](Log)
------ With jump link [](About#section of interest)
+----- With jump link [](Other#section of interest)
 - Same page (Jump link)
 -- With link text [Links](#Links)
 -- Without link text [](#Links)
@@ -74,11 +70,11 @@ The parser outputs HTML that shows supported features.
 ### Wikilinks
 - Different page
 -- Without custom link text
---- One word page name: [[About]]
+--- One word page name: [[Other]]
 --- [[Multi word page name]]
 --- Parse URL from any display case: [[Multi WORD page NAME]]
---- With jump link [[About#section of interest|Section name]]
--- With custom text name [[AbOuT|About this site]]
+--- With jump link [[Other#section of interest|Section name]]
+-- With custom text name [[OtHeR|Another page]]
 - Same page (Jump links to section on the same page)
 -- Parse URL from any display case (handle spaces)
 --- [[#Text Formatting]]
@@ -90,7 +86,7 @@ The parser outputs HTML that shows supported features.
 Inline style only ^[Footnote text]. Handle long footnotes ^[Long footnotes should wrap. Their base should stay in the same position as they grow in height.]
 
 ## Formatting
-Sequential: Normal text, **bold** text, *italic* text, ~~strike-through~~ text, `inline code` text, [link to about](about).
+Sequential: Normal text, **bold** text, *italic* text, ~~strike-through~~ text, `inline code` text, [link to log](log).
 
 Mixed: **bold and *italic* together** or ~~**bold strike-through**~~.
 
@@ -227,7 +223,7 @@ Via JSON array of arrays, in code block named 'table'.
   ["Touching lines","Joins touching lines\nwith spaces."],
   ["Paragraphs","Two linebreaks:\n\nseparate paragraphs."]
   ["Inline Styles","Handle **bold** and *italic* etc."]
-  ["Links in Cells","Test [[about]] End Test"]
+  ["Links in Cells","Test [[log]] End Test"]
 ]
 ```
 
