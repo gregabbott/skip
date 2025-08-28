@@ -32,7 +32,6 @@
   <span title="Access Key 3">Skip to main content</span>
   </a>
     <main>
-    <header>
     <nav>
     <ul>
     <li><a href="index.xml">Skip</a></li>
@@ -40,6 +39,7 @@
     <li><a href="info.xml">Info</a></li>
     </ul>
     </nav>
+    <header>
     <h1 id="top" class="h">
       <!-- Page title H1 from YAML -->
       <xsl:call-template name="extract-yaml-title">
@@ -114,14 +114,14 @@
     <footer>
       <a id="to_top" href="#top">Top</a>
   <!--Notice-->
-    <small 
+    <span 
   title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg Abbott 2025. Version 1: 2025-08-26. Version: 2025-08-28"
   >
     &#169; 2025
     <a
       href="https://gregabbott.pages.dev/"
     >Greg Abbott</a>. 
-  </small>
+  </span>
 </footer>
       </body>
     </html>
