@@ -33,10 +33,7 @@ version: 2025-08-28
 -- One section per heading and its content.
 - Footer
 
-# Tests
-The markup for this page includes tests for the parser.
-The parser outputs HTML that shows supported features.
-
+# Features
 ## Keyboard
 - Tab key should navigate the page (subject to browser config)
 - Access keys should jump to page sections
