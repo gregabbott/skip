@@ -28,6 +28,7 @@ Adds Skip Link to jump past header, map and preamble to content
 Hides 'Alt' label on inline images
 Adds site nav
 Improves image alt text span HTML to make sense in no-css mode
+Adds revealing footer
 ```
 
 # 2025_0827
