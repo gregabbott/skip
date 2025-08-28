@@ -10,8 +10,7 @@ name: Markdown to HTML with XSLT
 version 1: 2025-08-26
 version: 2025-08-28
 ---
-No JavaScript. No build. No dependencies.
-*Proof of concept.*
+*Proof of concept*
 
 # Structure
 ## Folder
