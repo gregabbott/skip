@@ -6,7 +6,7 @@ V1 2025_0826
 V 2025_0828
 -->
 ---
-name: XSLT Markdown Processor
+name: Skip
 version 1: 2025-08-26
 version: 2025-08-28
 ---
@@ -14,7 +14,8 @@ version: 2025-08-28
 
 *Early work in progress and proof of concept.*
 
-This project parses Markdown to HTML on page load using XSLT. No JS.
+Skip turns Markdown to HTML with an XSLT file.
+No JavaScript. No build. No dependencies.
 
 # Structure
 ## Folder
@@ -24,12 +25,13 @@ This project parses Markdown to HTML on page load using XSLT. No JS.
 - c.css      Styles pages (optional)
 ```
 
-## Markup
+## Page
+### Markup
 - Markdown may start with a YAML block.
 - Content may occur after YAML before any first heading.
 
-## Output
-- Name: Set via YAML `name` property value
+### HTML (Output)
+- Name: Set via YAML `name` property value.
 - Lead: Any content before first heading found in markup.
 - Map: Table of Contents (If page has headings).
 - Main:
