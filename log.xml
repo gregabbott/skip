@@ -11,6 +11,16 @@ note: Newest at top
 ---
 - Since: 2025-08-26
 
+# 2025_0829
+```
+Reduces XSLT weight from 110KB to 66KB
+  Refactors 110 to 84
+  Minifies lightly 84 to 66
+Improves default styling
+  Styles tables
+  Prevents over-scroll
+```
+
 # 2025_0828
 ```
 Toggles map visibility with keyboard
