@@ -15,7 +15,7 @@ version: 2025-08-28
 # Structure
 ## Folder
 ```
-- page.xml   Holds markdown between two lines of XML
+- page.xml   Holds Markdown between two lines of XML
              (View the source code for this page)
 - 0.xsl      Converts each page to HTML
 - c.css      Styles pages (optional)

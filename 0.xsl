@@ -1577,7 +1577,7 @@ process last to avoid conflicts with marked up links -->
 </xsl:if>
 </xsl:variable>
 <xsl:choose>
-<!-- Skip url inside markdown/wiki links -->
+<!-- Skip url inside Markdown/wiki links -->
 <xsl:when test="$char-before = '(' or $char-before = ']'">
 <xsl:value-of select="$text"/>
 </xsl:when>
@@ -1868,7 +1868,7 @@ process last to avoid conflicts with marked up links -->
 <!-- Error handling -->
 <xsl:template match="*">
 <div class="markdown-error">
-<p>Error processing markdown content</p>
+<p>Error processing Markdown content</p>
 <pre><xsl:value-of select="."/></pre>
 </div>
 </xsl:template>

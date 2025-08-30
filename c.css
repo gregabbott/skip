@@ -98,7 +98,6 @@ gap: 2ch;
 }
 #site_nav ul li {
 list-style-type: none;
--webkit-appearance: none;
 }
 footer {
 position: sticky;
@@ -265,6 +264,10 @@ display: inline;
 #map_holder {
 overflow: hidden;
 /*prevent jumping*/
+}
+#map_holder summary::-webkit-details-marker {
+  -webkit-appearance: none;
+  display: none;
 }
 #map_holder summary {
 background-color: var(--bg);
