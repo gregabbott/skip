@@ -118,15 +118,25 @@ The parser:
 Instead of indents and whitespace,
 use N dashes to represent depth level in a list:
 
-
-- `-` 0 indents
--- `--` 1 indent **bold**
--- 1 indent *italic*
---- `---` 2 indents ~~strike~~
---- 2 indents
----- `----` 3 indents [MD Link](#nested)
--- 1 indent [[#nested|Wikilink]]
+```
+Example
 - 0 indents
+-- 1 indent
+--- 2 indents
+-- 1 indent
+- 0 indents
+```
+
+*Example and test of a nested list with inline formatting*
+
+- Parent
+-- Child - **bold**
+-- Child - *italic*
+--- Grandchild ~~strike~~
+--- Grandchild
+---- Great grandchild [MD Link](#nested)
+-- Child [[#nested|Wikilink]]
+- Parent
 
 ### Ordered
 (And mixed content check)
@@ -139,11 +149,18 @@ use N dashes to represent depth level in a list:
 
 ### Tasks
 
-- [ ] Do `- [ ]`
-- [x] Done lowercase `- [x]`
-- [X] Done Uppercase `- [X]`
-- [ ] Handle **bold text** and inline tokens
-- [X] Task with `inline code`
+Via:
+
+```
+- [ ] To do
+- [X] Done
+```
+
+- [ ] Do
+- [x] Done (via lowercase x)
+- [X] Done (via uppercase X)
+- [ ] Handle todo with **inline formatting**.
+- [X] Handle done with `inline formatting`.
 
 ## Blocks
 ### Quotes
@@ -212,15 +229,15 @@ Options include:
 Before ![Alt text with inline image](smile.png) after.
 
 ## Tables
-Via JSON array of arrays, in code block named 'table'.
+Via JSON array of arrays, in a code block named 'table'.
 
 ```table
 [
-  ["Feature","Example"],
-  ["Touching lines","Joins touching lines\nwith spaces."],
-  ["Paragraphs","Two linebreaks:\n\nseparate paragraphs."]
-  ["Inline Styles","Handle **bold** and *italic* etc."]
-  ["Links in Cells","Test [[log]] End Test"]
+  ["Feature"       ,"Example"                                ],
+  ["Touching lines","Joins touching lines\nwith spaces."     ],
+  ["Paragraphs"    ,"Two linebreaks:\n\nseparate paragraphs."],
+  ["Inline Styles" ,"Handle **bold** and *italic* etc."      ],
+  ["Links in Cells","Test [[log]] End Test"                  ]
 ]
 ```
 

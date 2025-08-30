@@ -42,7 +42,7 @@ doctype-system="about:legacy-compat"
 <xsl:call-template name="extract-yaml-title">
 <xsl:with-param name="text" select="."/>
 </xsl:call-template>
-<a href="#top" accesskey="1">#</a>
+<a href="#top" title="Access Key 1" accesskey="1">#</a>
 </h1>
 </header>
 <xsl:variable name="content">
@@ -74,7 +74,7 @@ doctype-system="about:legacy-compat"
 <!-- TOC -->
 <xsl:if test="$has-headers = 'true'">
 <details id="map_holder">
-<summary tabindex="0" accesskey="2"><span>Map</span></summary>
+<summary tabindex="0" title="Access Key 2" accesskey="2"><span>Map</span></summary>
 <div id="map">
 <ul>
 <xsl:call-template name="generate-toc">
