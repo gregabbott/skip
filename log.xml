@@ -13,9 +13,7 @@ note: Newest at top
 
 # 2025_0829
 ```
-Reduces XSLT weight from 110KB to 66KB
-  Refactors 110 to 84
-  Minifies lightly 84 to 66
+Refactors XSLT and reduces weight from 110KB to 66KB
 Improves default styling
   Styles tables
   Prevents over-scroll
@@ -24,12 +22,12 @@ Improves default styling
 # 2025_0828
 ```
 Toggles map visibility with keyboard
-Adds DOCTYPE html to output avoid browsers using quirks mode
+Stops browsers showing output in quirks mode
 Adds tables support via tables block and JSON arrays
-Processes Markdown and paragraphs within table cells
+Handles mark up and paragraphs within table cells
 Adds a project log and some items
 Stops adding header-looking lines from code blocks to TOC
-Lets keyboard navigation focus on anchor links
+Focuses anchor links in keyboard tab navigation
 Adds access keys: 1 top, 2 menu, 3 main
 Put any content before the first markup header in a lead section
 Names project SKIP

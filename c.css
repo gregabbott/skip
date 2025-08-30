@@ -98,6 +98,7 @@ gap: 2ch;
 }
 #site_nav ul li {
 list-style-type: none;
+-webkit-appearance: none;
 }
 footer {
 position: sticky;
