@@ -197,6 +197,8 @@ border-radius: var(--b_rad);
 a:hover {
 background-color: var(--fg);
 color: var(--bg);
+text-decoration: none;
+border-radius: var(--b_rad);
 }
 ul,
 ol {
