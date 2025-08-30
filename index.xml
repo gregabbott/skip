@@ -241,6 +241,22 @@ Via JSON array of arrays, in a code block named 'table'.
 ]
 ```
 
+## Folds
+
+```details
+A details block holds normal content in a folding element:
+
+*Paragraphs* `with` ~~Inline~~ **styles**.
+
+- Lists
+```
+
+```details "Optional summary"
+
+Details elements don't ^[but could] hold other blocks.
+
+```
+
 ## Empty Lines and Spacing
 
 Empty lines follow this line in the markup.

@@ -23,7 +23,11 @@ doctype-system="about:legacy-compat"
 <xsl:with-param name="text" select="."/>
 </xsl:call-template>
 </xsl:variable>
+
+
 <title>Skip - <xsl:value-of select="$page-title"/></title>
+
+
 </head>
 <body>
 <a href="#post" class="skip_link" accesskey="3" tabindex="0">
@@ -128,8 +132,8 @@ href="https://gregabbott.pages.dev/"
 <xsl:param name="enable-sections" select="false()"/>
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$text"/>
-<xsl:with-param name="in-code-block" select="false()"/>
-<xsl:with-param name="in-blockquote" select="false()"/>
+<xsl:with-param name="in-triple-backticks-block" select="false()"/>
+<xsl:with-param name="block-type" select="''"/>
 <xsl:with-param name="in-list" select="false()"/>
 <xsl:with-param name="list-level" select="0"/>
 <xsl:with-param name="list-type" select="'ul'"/>
@@ -141,8 +145,8 @@ href="https://gregabbott.pages.dev/"
 <!-- Main processing template - preserves original structure -->
 <xsl:template name="process-lines">
 <xsl:param name="remaining"/>
-<xsl:param name="in-code-block"/>
-<xsl:param name="in-blockquote"/>
+<xsl:param name="in-triple-backticks-block"/>
+<xsl:param name="block-type"/>
 <xsl:param name="in-list"/>
 <xsl:param name="list-level"/>
 <xsl:param name="list-type"/>
@@ -166,8 +170,10 @@ href="https://gregabbott.pages.dev/"
 </xsl:if>
 </xsl:variable>
 <xsl:choose>
-<!-- Code block handling -->
+<!-- Triple backticks handling -->
 <xsl:when test="starts-with($line, '```')">
+<!-- Flush paragraph and close lists if not in code block -->
+<xsl:if test="$block-type != 'code'">
 <xsl:call-template name="flush-paragraph">
 <xsl:with-param name="paragraph" select="$paragraph-accumulator"/>
 </xsl:call-template>
@@ -176,24 +182,22 @@ href="https://gregabbott.pages.dev/"
 <xsl:with-param name="level" select="$list-level"/>
 <xsl:with-param name="list-type" select="$list-type"/>
 </xsl:call-template>
+</xsl:if>
 <xsl:choose>
-<!-- Starting blockquote -->
-<xsl:when test="starts-with($line, '```blockquote') and $in-blockquote = false()">
-<xsl:text disable-output-escaping="yes">&lt;blockquote&gt;</xsl:text>
-<xsl:call-template name="process-lines">
-<xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-code-block" select="false()"/>
-<xsl:with-param name="in-blockquote" select="true()"/>
-<xsl:with-param name="in-list" select="false()"/>
-<xsl:with-param name="list-level" select="0"/>
-<xsl:with-param name="list-type" select="'ul'"/>
-<xsl:with-param name="section-level" select="$section-level"/>
-<xsl:with-param name="paragraph-accumulator" select="''"/>
-<xsl:with-param name="enable-sections" select="$enable-sections"/>
-</xsl:call-template>
-</xsl:when>
-<!-- Starting table block -->
-<xsl:when test="starts-with($line, '```table') and $in-code-block = false()">
+<!-- Starting a new block -->
+<xsl:when test="$in-triple-backticks-block = false()">
+<!-- Determine block type -->
+<xsl:variable name="new-block-type">
+<xsl:choose>
+<xsl:when test="starts-with($line, '```blockquote')">blockquote</xsl:when>
+<xsl:when test="starts-with($line, '```details')">details</xsl:when>
+<xsl:when test="starts-with($line, '```table')">table</xsl:when>
+<xsl:otherwise>code</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+<!-- Handle table specially -->
+<xsl:choose>
+<xsl:when test="$new-block-type = 'table'">
 <xsl:variable name="table-content">
 <xsl:call-template name="collect-until-marker">
 <xsl:with-param name="text" select="$rest"/>
@@ -213,38 +217,8 @@ href="https://gregabbott.pages.dev/"
 </xsl:variable>
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$remaining-after-table"/>
-<xsl:with-param name="in-code-block" select="false()"/>
-<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
-<xsl:with-param name="in-list" select="false()"/>
-<xsl:with-param name="list-level" select="0"/>
-<xsl:with-param name="list-type" select="'ul'"/>
-<xsl:with-param name="section-level" select="$section-level"/>
-<xsl:with-param name="paragraph-accumulator" select="''"/>
-<xsl:with-param name="enable-sections" select="$enable-sections"/>
-</xsl:call-template>
-</xsl:when>
-<!-- Ending blockquote -->
-<xsl:when test="$line = '```' and $in-blockquote = true()">
-<xsl:text disable-output-escaping="yes">&lt;/blockquote&gt;</xsl:text>
-<xsl:call-template name="process-lines">
-<xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-code-block" select="false()"/>
-<xsl:with-param name="in-blockquote" select="false()"/>
-<xsl:with-param name="in-list" select="false()"/>
-<xsl:with-param name="list-level" select="0"/>
-<xsl:with-param name="list-type" select="'ul'"/>
-<xsl:with-param name="section-level" select="$section-level"/>
-<xsl:with-param name="paragraph-accumulator" select="''"/>
-<xsl:with-param name="enable-sections" select="$enable-sections"/>
-</xsl:call-template>
-</xsl:when>
-<!-- Regular code block toggle -->
-<xsl:when test="$in-code-block = true()">
-<xsl:text disable-output-escaping="yes">&lt;/code&gt;&lt;/pre&gt;</xsl:text>
-<xsl:call-template name="process-lines">
-<xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-code-block" select="false()"/>
-<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
+<xsl:with-param name="in-triple-backticks-block" select="false()"/>
+<xsl:with-param name="block-type" select="''"/>
 <xsl:with-param name="in-list" select="false()"/>
 <xsl:with-param name="list-level" select="0"/>
 <xsl:with-param name="list-type" select="'ul'"/>
@@ -254,11 +228,37 @@ href="https://gregabbott.pages.dev/"
 </xsl:call-template>
 </xsl:when>
 <xsl:otherwise>
+<!-- Output opening tag based on type -->
+<xsl:choose>
+<xsl:when test="$new-block-type = 'blockquote'">
+<xsl:text disable-output-escaping="yes">&lt;blockquote&gt;</xsl:text>
+</xsl:when>
+<xsl:when test="$new-block-type = 'details'">
+<xsl:text disable-output-escaping="yes">&lt;details&gt;&lt;summary&gt;</xsl:text>
+<!-- Handle optional summary -->
+<xsl:variable name="after-details" select="substring-after($line, '```details')"/>
+<xsl:variable name="trimmed-after" select="normalize-space($after-details)"/>
+<xsl:variable name="summary-text">
+  <xsl:choose>
+    <xsl:when test="starts-with($trimmed-after, '&quot;') and contains(substring-after($trimmed-after, '&quot;'), '&quot;')">
+      <xsl:value-of select="substring-before(substring-after($trimmed-after, '&quot;'), '&quot;')"/>
+    </xsl:when>
+    <xsl:otherwise>Details</xsl:otherwise>
+  </xsl:choose>
+</xsl:variable>
+<xsl:value-of select="$summary-text"/>
+<xsl:text disable-output-escaping="yes">&lt;/summary&gt;&lt;div&gt;
+</xsl:text>
+</xsl:when>
+<xsl:when test="$new-block-type = 'code'">
 <xsl:text disable-output-escaping="yes">&lt;pre&gt;&lt;code&gt;</xsl:text>
+</xsl:when>
+</xsl:choose>
+<!-- Continue with block open -->
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-code-block" select="true()"/>
-<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
+<xsl:with-param name="in-triple-backticks-block" select="true()"/>
+<xsl:with-param name="block-type" select="$new-block-type"/>
 <xsl:with-param name="in-list" select="false()"/>
 <xsl:with-param name="list-level" select="0"/>
 <xsl:with-param name="list-type" select="'ul'"/>
@@ -269,16 +269,46 @@ href="https://gregabbott.pages.dev/"
 </xsl:otherwise>
 </xsl:choose>
 </xsl:when>
-<!-- Inside code block -->
-<xsl:when test="$in-code-block = true()">
+<!-- Ending a block -->
+<xsl:when test="$in-triple-backticks-block = true() and $line = '```'">
+<!-- Output closing tag based on type -->
+<xsl:choose>
+<xsl:when test="$block-type = 'blockquote'">
+<xsl:text disable-output-escaping="yes">&lt;/blockquote&gt;</xsl:text>
+</xsl:when>
+<xsl:when test="$block-type = 'details'">
+<xsl:text disable-output-escaping="yes">&lt;/div&gt;&lt;/details&gt;</xsl:text>
+</xsl:when>
+<xsl:when test="$block-type = 'code'">
+<xsl:text disable-output-escaping="yes">&lt;/code&gt;&lt;/pre&gt;</xsl:text>
+</xsl:when>
+</xsl:choose>
+<!-- Continue with block closed -->
+<xsl:call-template name="process-lines">
+<xsl:with-param name="remaining" select="$rest"/>
+<xsl:with-param name="in-triple-backticks-block" select="false()"/>
+<xsl:with-param name="block-type" select="''"/>
+<xsl:with-param name="in-list" select="false()"/>
+<xsl:with-param name="list-level" select="0"/>
+<xsl:with-param name="list-type" select="'ul'"/>
+<xsl:with-param name="section-level" select="$section-level"/>
+<xsl:with-param name="paragraph-accumulator" select="''"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
+</xsl:call-template>
+</xsl:when>
+</xsl:choose>
+</xsl:when>
+<!-- Inside a triple backticks block -->
+<xsl:when test="$in-triple-backticks-block = true() and $block-type = 'code'">
+<!-- Code block: output as-is -->
 <xsl:value-of select="$line"/>
 <xsl:if test="string-length($rest) > 0">
 <xsl:text>&#10;</xsl:text>
 </xsl:if>
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-code-block" select="true()"/>
-<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
+<xsl:with-param name="in-triple-backticks-block" select="true()"/>
+<xsl:with-param name="block-type" select="$block-type"/>
 <xsl:with-param name="in-list" select="$in-list"/>
 <xsl:with-param name="list-level" select="$list-level"/>
 <xsl:with-param name="list-type" select="$list-type"/>
@@ -299,8 +329,8 @@ href="https://gregabbott.pages.dev/"
 </xsl:call-template>
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-code-block" select="false()"/>
-<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
+<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
+<xsl:with-param name="block-type" select="$block-type"/>
 <xsl:with-param name="in-list" select="false()"/>
 <xsl:with-param name="list-level" select="0"/>
 <xsl:with-param name="list-type" select="'ul'"/>
@@ -309,8 +339,8 @@ href="https://gregabbott.pages.dev/"
 <xsl:with-param name="enable-sections" select="$enable-sections"/>
 </xsl:call-template>
 </xsl:when>
-<!-- Headers -->
-<xsl:when test="starts-with($line, '#') and $in-code-block = false()">
+<!-- Headers - only process if not in any triple backticks block -->
+<xsl:when test="starts-with($line, '#') and $in-triple-backticks-block = false()">
 <xsl:call-template name="flush-paragraph">
 <xsl:with-param name="paragraph" select="$paragraph-accumulator"/>
 </xsl:call-template>
@@ -322,7 +352,7 @@ href="https://gregabbott.pages.dev/"
 <!-- Section management (only outside blockquotes and when enabled) -->
 <xsl:variable name="new-section-level">
 <xsl:choose>
-<xsl:when test="$enable-sections and $in-blockquote = false()">
+<xsl:when test="$enable-sections">
 <xsl:call-template name="close-lists">
 <xsl:with-param name="in-list" select="$in-list"/>
 <xsl:with-param name="level" select="$list-level"/>
@@ -345,12 +375,12 @@ href="https://gregabbott.pages.dev/"
 <!-- Process heading -->
 <xsl:call-template name="process-heading">
 <xsl:with-param name="line" select="$line"/>
-<xsl:with-param name="shift-level" select="$enable-sections and $in-blockquote = false()"/>
+<xsl:with-param name="shift-level" select="$enable-sections"/>
 </xsl:call-template>
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-code-block" select="false()"/>
-<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
+<xsl:with-param name="in-triple-backticks-block" select="false()"/>
+<xsl:with-param name="block-type" select="''"/>
 <xsl:with-param name="in-list" select="false()"/>
 <xsl:with-param name="list-level" select="0"/>
 <xsl:with-param name="list-type" select="'ul'"/>
@@ -384,8 +414,8 @@ href="https://gregabbott.pages.dev/"
 </li>
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-code-block" select="false()"/>
-<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
+<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
+<xsl:with-param name="block-type" select="$block-type"/>
 <xsl:with-param name="in-list" select="true()"/>
 <xsl:with-param name="list-level" select="$current-level"/>
 <xsl:with-param name="list-type" select="'ul'"/>
@@ -415,8 +445,8 @@ href="https://gregabbott.pages.dev/"
 </li>
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-code-block" select="false()"/>
-<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
+<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
+<xsl:with-param name="block-type" select="$block-type"/>
 <xsl:with-param name="in-list" select="true()"/>
 <xsl:with-param name="list-level" select="$current-level"/>
 <xsl:with-param name="list-type" select="'ol'"/>
@@ -455,8 +485,8 @@ href="https://gregabbott.pages.dev/"
 </li>
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-code-block" select="false()"/>
-<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
+<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
+<xsl:with-param name="block-type" select="$block-type"/>
 <xsl:with-param name="in-list" select="true()"/>
 <xsl:with-param name="list-level" select="$current-level"/>
 <xsl:with-param name="list-type" select="'ul'"/>
@@ -475,7 +505,8 @@ href="https://gregabbott.pages.dev/"
 <hr/>
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-code-block" select="false()"/>
+<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
+<xsl:with-param name="block-type" select="$block-type"/>
 <xsl:with-param name="in-list" select="false()"/>
 <xsl:with-param name="list-level" select="0"/>
 <xsl:with-param name="list-type" select="'ul'"/>
@@ -499,8 +530,8 @@ href="https://gregabbott.pages.dev/"
 </xsl:call-template>
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-code-block" select="false()"/>
-<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
+<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
+<xsl:with-param name="block-type" select="$block-type"/>
 <xsl:with-param name="in-list" select="false()"/>
 <xsl:with-param name="list-level" select="0"/>
 <xsl:with-param name="list-type" select="'ul'"/>
@@ -523,8 +554,8 @@ href="https://gregabbott.pages.dev/"
 </xsl:variable>
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-code-block" select="$in-code-block"/>
-<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
+<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
+<xsl:with-param name="block-type" select="$block-type"/>
 <xsl:with-param name="in-list" select="$in-list"/>
 <xsl:with-param name="list-level" select="$list-level"/>
 <xsl:with-param name="list-type" select="$list-type"/>
@@ -545,8 +576,19 @@ href="https://gregabbott.pages.dev/"
 <xsl:with-param name="level" select="$list-level"/>
 <xsl:with-param name="list-type" select="$list-type"/>
 </xsl:call-template>
-<xsl:if test="$in-blockquote = true()">
+<xsl:if test="$in-triple-backticks-block = true()">
+<!-- Close unclosed blocks -->
+<xsl:choose>
+<xsl:when test="$block-type = 'blockquote'">
 <xsl:text disable-output-escaping="yes">&lt;/blockquote&gt;</xsl:text>
+</xsl:when>
+<xsl:when test="$block-type = 'details'">
+<xsl:text disable-output-escaping="yes">&lt;/details&gt;</xsl:text>
+</xsl:when>
+<xsl:when test="$block-type = 'code'">
+<xsl:text disable-output-escaping="yes">&lt;/code&gt;&lt;/pre&gt;</xsl:text>
+</xsl:when>
+</xsl:choose>
 </xsl:if>
 <xsl:if test="$section-level > 0">
 <xsl:call-template name="close-sections">
@@ -891,6 +933,7 @@ href="https://gregabbott.pages.dev/"
 </xsl:template>
 <xsl:template name="check-for-headers">
 <xsl:param name="text"/>
+<xsl:param name="in-triple-backticks-block" select="false()"/>
 <xsl:if test="string-length($text) > 0">
 <xsl:variable name="line">
 <xsl:choose>
@@ -908,12 +951,21 @@ href="https://gregabbott.pages.dev/"
 </xsl:if>
 </xsl:variable>
 <xsl:choose>
-<xsl:when test="starts-with($line, '#')">
+<!-- Toggle block state on ``` -->
+<xsl:when test="starts-with($line, '```')">
+<xsl:call-template name="check-for-headers">
+<xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="in-triple-backticks-block" select="not($in-triple-backticks-block)"/>
+</xsl:call-template>
+</xsl:when>
+<!-- Found header outside of blocks -->
+<xsl:when test="starts-with($line, '#') and $in-triple-backticks-block = false()">
 <xsl:text>true</xsl:text>
 </xsl:when>
 <xsl:when test="string-length($rest) > 0">
 <xsl:call-template name="check-for-headers">
 <xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
 </xsl:call-template>
 </xsl:when>
 <xsl:otherwise>
@@ -1296,8 +1348,7 @@ process last to avoid conflicts with marked up links -->
 <!-- TOC generation -->
 <xsl:template name="generate-toc">
 <xsl:param name="text"/>
-<xsl:param name="in-code-block" select="false()"/>
-<xsl:param name="in-blockquote" select="false()"/>
+<xsl:param name="in-triple-backticks-block" select="false()"/>
 <xsl:if test="string-length($text) > 0">
 <xsl:variable name="line">
 <xsl:choose>
@@ -1315,45 +1366,16 @@ process last to avoid conflicts with marked up links -->
 </xsl:if>
 </xsl:variable>
 <xsl:choose>
-<!-- Handle code block/blockquote state changes -->
+<!-- Handle triple backticks state changes -->
 <xsl:when test="starts-with($line, '```')">
-<xsl:choose>
-<!-- Starting blockquote -->
-<xsl:when test="starts-with($line, '```blockquote') and $in-blockquote = false()">
+<!-- Simply toggle the state -->
 <xsl:call-template name="generate-toc">
 <xsl:with-param name="text" select="$rest"/>
-<xsl:with-param name="in-code-block" select="false()"/>
-<xsl:with-param name="in-blockquote" select="true()"/>
+<xsl:with-param name="in-triple-backticks-block" select="not($in-triple-backticks-block)"/>
 </xsl:call-template>
 </xsl:when>
-<!-- Ending blockquote -->
-<xsl:when test="$line = '```' and $in-blockquote = true()">
-<xsl:call-template name="generate-toc">
-<xsl:with-param name="text" select="$rest"/>
-<xsl:with-param name="in-code-block" select="false()"/>
-<xsl:with-param name="in-blockquote" select="false()"/>
-</xsl:call-template>
-</xsl:when>
-<!-- Ending code block -->
-<xsl:when test="$in-code-block = true()">
-<xsl:call-template name="generate-toc">
-<xsl:with-param name="text" select="$rest"/>
-<xsl:with-param name="in-code-block" select="false()"/>
-<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
-</xsl:call-template>
-</xsl:when>
-<!-- Starting code block -->
-<xsl:otherwise>
-<xsl:call-template name="generate-toc">
-<xsl:with-param name="text" select="$rest"/>
-<xsl:with-param name="in-code-block" select="true()"/>
-<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
-</xsl:call-template>
-</xsl:otherwise>
-</xsl:choose>
-</xsl:when>
-<!-- Check if this line is a header (only if not in code block or blockquote) -->
-<xsl:when test="starts-with($line, '#') and $in-code-block = false() and $in-blockquote = false()">
+<!-- Check if this line is a header (only if not in any triple backticks block) -->
+<xsl:when test="starts-with($line, '#') and $in-triple-backticks-block = false()">
 <xsl:variable name="heading-text" select="normalize-space(translate($line, '#', ''))"/>
 <xsl:variable name="heading-id">
 <xsl:call-template name="generate-heading-id">
@@ -1379,16 +1401,14 @@ process last to avoid conflicts with marked up links -->
 <!-- Continue with the rest -->
 <xsl:call-template name="generate-toc">
 <xsl:with-param name="text" select="$rest"/>
-<xsl:with-param name="in-code-block" select="$in-code-block"/>
-<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
+<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
 </xsl:call-template>
 </xsl:when>
 <!-- Continue with the rest (not a header nor state change) -->
 <xsl:otherwise>
 <xsl:call-template name="generate-toc">
 <xsl:with-param name="text" select="$rest"/>
-<xsl:with-param name="in-code-block" select="$in-code-block"/>
-<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
+<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
 </xsl:call-template>
 </xsl:otherwise>
 </xsl:choose>

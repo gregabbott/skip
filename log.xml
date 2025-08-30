@@ -11,68 +11,75 @@ note: Newest at top
 ---
 - Since: 2025-08-26
 
-# 2025_0829
+# 2025_0830
 ```
-Refactors XSLT and reduces weight from 110KB to 66KB
-Improves default styling
-  Styles tables
-  Prevents over-scroll
-```
-
-# 2025_0828
-```
-Toggles map visibility with keyboard
-Stops browsers showing output in quirks mode
-Adds tables support via tables block and JSON arrays
-Handles mark up and paragraphs within table cells
-Adds a project log and some items
-Stops adding header-looking lines from code blocks to TOC
-Focuses anchor links in keyboard tab navigation
-Adds access keys: 1 top, 2 menu, 3 main
-Put any content before the first markup header in a lead section
-Names project SKIP
-Uploads to GitHub
-Adds Skip Link to jump past header, map and preamble to content
-Hides 'Alt' label on inline images
-Adds site nav
-Improves image alt text span HTML to make sense in no-css mode
-Reveals footer behind main.
-Covers header with main.
+- XSLT
+-- Adds "details" block type
+-- Unifies triple backtick blocks logic (vs. code for each type)
+- CSS
+-- Styles details summary content block
 ```
 
-# 2025_0827
+# Previous
+```details "2025_0829"
+- Refactors XSLT and reduces weight from 110KB to 66KB
+- Improves default styling
+-- Styles tables
+-- Prevents over-scroll
 ```
-Marks up blockquote with named code block instead of markdown
-  This approach works better when using XSLT as a parser
-  Supports inner paragraphs and inline tokens
-Joins touching text lines with ' ' to form one paragraph
-Recursively processes inline tokens (for example italic in bold)
-Adds visibility toggle for image alt text
-Rewrites and reorders the test page
-  Tweaks parser to pass more tests
-Adds keyboard tab navigation
+
+```details "2025_0828"
+- Toggles map visibility with keyboard
+- Stops browsers showing output in quirks mode
+- Adds tables support via tables block and JSON arrays
+- Handles mark up and paragraphs within table cells
+- Adds a project log and some items
+- Stops adding header-looking lines from code blocks to TOC
+- Focuses anchor links in keyboard tab navigation
+- Adds access keys: 1 top, 2 menu, 3 main
+- Makes a 'lead' section of any content before the first header
+- Names project SKIP
+- Uploads to GitHub
+- Adds a Skip Link to jump from top, past nav, to content
+- Hides 'Alt' label on inline images
+- Adds site nav
+- Improves image alt text span HTML to make sense in no-css mode
+- Reveals footer behind main.
+- Covers header with main.
 ```
-# 2025_0826
+
+```details "2025_0827"
+- Marks up blockquote with named code block instead of markdown
+-- This approach works better when using XSLT as a parser
+-- Supports inner paragraphs and inline tokens
+- Joins touching text lines with ' ' to form one paragraph
+- Recursively processes inline tokens (e.g. italic in bold)
+- Adds visibility toggle for image alt text
+- Rewrites and reorders the test page
+-- Tweaks parser to pass more tests
+- Adds keyboard tab navigation
 ```
-Implements basic parser and test cases
-  Paragraphs
-  Inline tokens: bold, italic, strike-through
-  Header
-  Lists
-  Code blocks
-  Block quotes
-  Links: Markdown and wikilink styles
-  Images: Inline and block
-Adds features
-  Handles hash links to same and different pages
-  Handles absent link text for both link styles
-  Adds anchor links to headings
-  Makes a table of contents from headings
-  Presents table of contents in hide and show menu
-  Adds inline footnotes
-  Structures page into sections based on headings and levels
-  Adds YAML front matter to MD docs
-  Parses 'name' property in YAML for page title
+
+```details "2025_0826"
+- Implements basic parser and test cases
+-- Paragraphs
+-- Inline tokens: bold, italic, strike-through
+-- Header
+-- Lists
+-- Code blocks
+-- Block quotes
+-- Links: Markdown and wikilink styles
+-- Images: Inline and block
+- Adds features
+-- Handles hash links to same and different pages
+-- Handles absent link text for both link styles
+-- Adds anchor links to headings
+-- Makes a table of contents from headings
+-- Presents table of contents in hide and show menu
+-- Adds inline footnotes
+-- Structures page into sections based on headings and levels
+-- Adds YAML front matter to MD docs
+-- Parses 'name' property in YAML for page title
 ```
 </x>
 
