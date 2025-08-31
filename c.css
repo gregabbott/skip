@@ -323,13 +323,20 @@ content: "Hide ";
 margin: 0;
 padding: .5lh 0;
 list-style: none;
+scroll-behavior: smooth;
+scroll-target-group: auto;
 }
 #map li {
 margin: 0;
 }
 #map a {
-text-decoration: none;
-display: block;
+  text-decoration: none;
+  display: block;
+  &:target-current,
+  &:target-current:hover{
+    color:var(--bg);
+    background:var(--fg);
+  }
 }
 #map a:hover {
 background-color: transparent;

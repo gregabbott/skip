@@ -11,6 +11,12 @@ note: Newest at top
 ---
 - Since: 2025-08-26
 
+# 2025_0831
+```
+- CSS
+-- Highlights Map based on scroll position (Chrome 140)
+```
+
 # 2025_0830
 ```
 - XSLT

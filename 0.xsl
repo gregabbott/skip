@@ -77,7 +77,7 @@ doctype-system="about:legacy-compat"
 </xsl:if>
 <!-- TOC -->
 <xsl:if test="$has-headers = 'true'">
-<details id="map_holder">
+<details id="map_holder" >
 <summary tabindex="0" title="Access Key 2" accesskey="2"><span>Map</span></summary>
 <div id="map">
 <ul>

@@ -18,12 +18,12 @@ version: 2025-08-28
 - page.xml   Holds Markdown between two lines of XML
              (View the source code for this page)
 - 0.xsl      Converts each page to HTML
-- c.css      Styles pages (optional)
+- c.css      Optional styles sheet
 ```
 
 ## Page
 ### Markup
-- Markdown may start with a YAML block.
+- Markup may start with a YAML block.
 - Content may occur after YAML before any first heading.
 
 ### HTML (Output)
@@ -35,6 +35,8 @@ version: 2025-08-28
 - Footer
 
 # Features
+Markup include some pre-markdown, markdown, and custom conventions.
+
 ## Keyboard
 - Tab key should navigate the page (subject to browser config)
 - Access keys should jump to page sections
@@ -74,10 +76,10 @@ version: 2025-08-28
 -- With custom text name [[OtHeR|Another page]]
 - Same page (Jump links to section on the same page)
 -- Parse URL from any display case (handle spaces)
---- [[#Text Formatting]]
---- upper [[#TEXT FORMATTING]]
---- lower [[#text formatting]]
--- With [[#wikilinks|custom text for jump link]]
+--- [[#WikiLinks]]
+--- upper [[#WIKILINKS]]
+--- lower [[#wikilinks]]
+-- With [[#wikilinks|custom jump link text]]
 
 ## Footnotes
 Inline style only ^[Footnote text]. Handle long footnotes ^[Long footnotes should wrap. Their base should stay in the same position as they grow in height.]
@@ -233,11 +235,11 @@ Via JSON array of arrays, in a code block named 'table'.
 
 ```table
 [
-  ["Feature"       ,"Example"                                ],
-  ["Touching lines","Joins touching lines\nwith spaces."     ],
-  ["Paragraphs"    ,"Two linebreaks:\n\nseparate paragraphs."],
-  ["Inline Styles" ,"Handle **bold** and *italic* etc."      ],
-  ["Links in Cells","Test [[log]] End Test"                  ]
+  ["Feature"        ,"Example"                                ],
+  ["Touching lines" ,"Joins touching lines\nwith spaces."     ],
+  ["Paragraphs"     ,"Two linebreaks:\n\nseparate paragraphs."],
+  ["Inline Styles"  ,"Handle **bold** and *italic* etc."      ],
+  ["Links in Cells" ,"Test [[log]] End Test"                  ]
 ]
 ```
 
