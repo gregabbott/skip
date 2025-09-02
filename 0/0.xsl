@@ -23,7 +23,7 @@ doctype-system="about:legacy-compat"
 <meta charset="UTF-8" />
 <meta name="color-scheme" content="light dark" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link href="c.css" rel="stylesheet" />
+<link href="../0/0.css" rel="stylesheet" />
 <title>Skip - <xsl:value-of select="$page-title" /></title>
 </head>
 <body>
@@ -1254,7 +1254,7 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:when test="normalize-space($alt-text) != ''">
 <span class="img_w_alt">
 <label>
-<img src="{$src}" alt="{$alt-text}"/>
+<img src="../i/{$src}" alt="{$alt-text}"/>
 <input name="i_a" type="checkbox" hidden="hidden"/>
 <span></span><!--CSS contains text-->
 <span><xsl:value-of select="$alt-text"/></span>
@@ -1263,7 +1263,7 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 </xsl:when>
 <!-- Image without alt text - regular img -->
 <xsl:otherwise>
-<img src="{$src}" alt=""/>
+<img src="../i/{$src}" alt=""/>
 </xsl:otherwise>
 </xsl:choose>
 <xsl:call-template name="process-inline">
