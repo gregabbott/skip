@@ -1,15 +1,14 @@
 <?xml-stylesheet type="text/xsl" href="0.xsl"?><x>
+---
+name: Markdown to HTML with XSLT
+date: 2025-08-28
+---
 <!-- 
 Project: Markdown to HTML via XSLT
 Copyright 2025 Greg Abbott 
-V1 2025_0826
-V 2025_0828
+V1 2025-08-26
+V 2025-08-28
 -->
----
-name: Markdown to HTML with XSLT
-version 1: 2025-08-26
-version: 2025-08-28
----
 *Proof of concept*
 
 # Structure

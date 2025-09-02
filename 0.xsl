@@ -4,35 +4,33 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 xmlns:msxsl="urn:schemas-microsoft-com:xslt"
 xmlns:exsl="http://exslt.org/common"
 extension-element-prefixes="msxsl exsl">  
+<!-- file must exist: --><xsl:import href="pages.xsl"/>
 <xsl:output
 method="html"
 indent="yes"
 encoding="UTF-8"
 doctype-system="about:legacy-compat"
 />
-<!-- Main template -->
+<!-- Main -->
 <xsl:template match="/">
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="color-scheme" content="light dark"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<link href="c.css" rel="stylesheet"/>
 <xsl:variable name="page-title">
 <xsl:call-template name="extract-yaml-title">
-<xsl:with-param name="text" select="."/>
+<xsl:with-param name="text" select="." />
 </xsl:call-template>
 </xsl:variable>
-
-
-<title>Skip - <xsl:value-of select="$page-title"/></title>
-
-
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="color-scheme" content="light dark" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link href="c.css" rel="stylesheet" />
+<title>Skip - <xsl:value-of select="$page-title" /></title>
 </head>
 <body>
 <a href="#post" class="skip_link" accesskey="3" tabindex="0">
 <span title="Access Key 3">Skip to main content</span>
 </a>
+<div id="_nav_and_main">
 <nav id="site_nav">
 <ul>
 <li><a href="index.xml">Home</a></li>
@@ -43,46 +41,44 @@ doctype-system="about:legacy-compat"
 <main>
 <header>
 <h1 id="top" class="h">
-<xsl:call-template name="extract-yaml-title">
-<xsl:with-param name="text" select="."/>
-</xsl:call-template>
+<xsl:value-of select="$page-title" />
 <a href="#top" title="Access Key 1" accesskey="1">#</a>
 </h1>
 </header>
 <xsl:variable name="content">
 <xsl:call-template name="remove-yaml-frontmatter">
-<xsl:with-param name="text" select="."/>
+<xsl:with-param name="text" select="." />
 </xsl:call-template>
 </xsl:variable>
 <xsl:variable name="has-headers">
 <xsl:call-template name="check-for-headers">
-<xsl:with-param name="text" select="$content"/>
+<xsl:with-param name="text" select="$content" />
 </xsl:call-template>
 </xsl:variable>
 <!-- Lead content -->
 <xsl:if test="$has-headers = 'true'">
 <xsl:variable name="lead-content">
 <xsl:call-template name="extract-lead-content">
-<xsl:with-param name="text" select="$content"/>
+<xsl:with-param name="text" select="$content" />
 </xsl:call-template>
 </xsl:variable>
 <xsl:if test="normalize-space($lead-content) != ''">
 <section class="lead">
 <xsl:call-template name="process-content">
-<xsl:with-param name="text" select="$lead-content"/>
-<xsl:with-param name="enable-sections" select="false()"/>
+<xsl:with-param name="text" select="$lead-content" />
+<xsl:with-param name="enable-sections" select="false()" />
 </xsl:call-template>
 </section>
 </xsl:if>
 </xsl:if>
 <!-- TOC -->
 <xsl:if test="$has-headers = 'true'">
-<details id="map_holder" >
+<details id="map_holder">
 <summary tabindex="0" title="Access Key 2" accesskey="2"><span>Map</span></summary>
 <div id="map">
 <ul>
 <xsl:call-template name="generate-toc">
-<xsl:with-param name="text" select="$content"/>
+<xsl:with-param name="text" select="$content" />
 </xsl:call-template>
 </ul>
 </div>
@@ -94,38 +90,135 @@ doctype-system="about:legacy-compat"
 <xsl:when test="$has-headers = 'true'">
 <xsl:variable name="content-from-first-header">
 <xsl:call-template name="extract-content-from-first-header">
-<xsl:with-param name="text" select="$content"/>
+<xsl:with-param name="text" select="$content" />
 </xsl:call-template>
 </xsl:variable>
 <xsl:call-template name="process-content">
-<xsl:with-param name="text" select="$content-from-first-header"/>
-<xsl:with-param name="enable-sections" select="true()"/>
+<xsl:with-param name="text" select="$content-from-first-header" />
+<xsl:with-param name="enable-sections" select="true()" />
 </xsl:call-template>
 </xsl:when>
 <xsl:otherwise>
 <xsl:call-template name="process-content">
-<xsl:with-param name="text" select="$content"/>
-<xsl:with-param name="enable-sections" select="false()"/>
+<xsl:with-param name="text" select="$content" />
+<xsl:with-param name="enable-sections" select="false()" />
 </xsl:call-template>
 </xsl:otherwise>
 </xsl:choose>
+<xsl:if test="pages">
+<xsl:call-template name="simple-nav-list"/>
+</xsl:if>
 </article>
 </main>
+<!-- Call prev-next (only outputs if prev or next exists -->
+<xsl:call-template name="prev-next-nav">
+<xsl:with-param name="current-page-name" select="$page-title"/>
+</xsl:call-template>
+<!-- end prev-next-->
+</div><!--end _nav_and_main-->
 <footer>
 <a id="to_top" href="#top">Top</a>
 <!--Notice-->
-<span 
-title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg Abbott 2025. Version 1: 2025-08-26. Version: 2025-08-28"
->
+<span
+title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg Abbott 2025. Version 1: 2025-08-26. Version: 2025-09-02">
 &#169; 2025
-<a
-href="https://gregabbott.pages.dev/"
->Greg Abbott</a>. 
+<a href="https://gregabbott.pages.dev/">Greg Abbott</a>.
 </span>
+<li><a href="pages.xml">Pages</a></li>
 </footer>
 </body>
 </html>
 </xsl:template>
+<!-- Previous and Next Page Nav -->
+  <xsl:template name="prev-next-nav">
+  <!-- Rules
+  Do nothing if:
+    page list Empty
+    page list lacks current Page name
+    page List has one item (nothing to link to) 
+  Else make <nav> element &&
+    if First page only: only "next" link
+    if Last page only: only "prev" link
+    if Middle page: "prev" and "next" links 
+ -->
+    <xsl:param name="current-page-name"/>
+    <xsl:variable name="page-list" select="exsl:node-set($ps)/p"/>
+    <xsl:variable name="matching-page" select="$page-list[@n = $current-page-name]"/>
+    <!-- Only proceed if current page found in page list -->
+    <xsl:if test="$matching-page">
+      <xsl:variable name="current-position" select="count($matching-page/preceding-sibling::p) + 1"/>
+      <xsl:variable name="total-pages" select="count($page-list)"/>
+      <!-- Check for prev or next links (relative to current page) -->
+      <xsl:variable name="has-prev" select="$current-position > 1"/>
+      <xsl:variable name="has-next" select="$current-position &lt; $total-pages"/>
+      <!-- Only create nav element if it holds >0 links -->
+      <xsl:if test="$has-prev or $has-next">
+        <nav class="prev_next">
+        <hr/>
+          <!-- Previous, left, Newer
+          the page created/dated after the current one
+          Higher / earlier in list 
+          -->
+         <xsl:choose>
+      <xsl:when test="$has-prev">
+        <xsl:variable name="prev-page" select="$page-list[$current-position - 1]"/>
+        <div class="prev">
+          <a tabindex="0" href="{$prev-page/@u}.xml">
+            <span>Newer</span><br/>
+            <span><xsl:value-of select="$prev-page/@n"/></span>
+          </a>
+        </div>
+      </xsl:when>
+      <xsl:otherwise>
+        <div class="no_prev">
+          <span>
+            <span>Newer</span><br/>
+            <span>No newer posts</span>
+          </span>
+        </div>
+      </xsl:otherwise>
+    </xsl:choose>
+          <!-- next, right, Older
+          the page created/dated before the current one
+          Lower / later in list 
+          -->
+          <xsl:choose>
+      <xsl:when test="$has-next">
+        <xsl:variable name="next-page" select="$page-list[$current-position + 1]"/>
+        <div class="next">
+          <a tabindex="0" href="{$next-page/@u}.xml">
+            <span>Older</span><br/>
+            <span><xsl:value-of select="$next-page/@n"/></span>
+          </a>
+        </div>
+      </xsl:when>
+      <xsl:otherwise>
+        <div class="no_next">
+          <span>
+          <span>Older</span><br/>
+          <span>No older posts</span>
+          </span>
+        </div>
+      </xsl:otherwise>
+    </xsl:choose>
+        </nav>
+      </xsl:if>
+    </xsl:if>
+  </xsl:template>
+ <!--  PAGE LIST {p:page item,u:url,n:name}-->
+  <xsl:template name="simple-nav-list">
+    <ul>
+      <xsl:for-each select="exsl:node-set($ps)/p">
+        <li>
+          <a href="{@u}.xml">
+          <xsl:value-of select="@d"/>
+          <xsl:text> </xsl:text>
+          <xsl:value-of select="@n"/>
+          </a>
+        </li>
+      </xsl:for-each>
+    </ul>
+  </xsl:template>
 <!-- Unified content processing entry point -->
 <xsl:template name="process-content">
 <xsl:param name="text"/>
@@ -1368,7 +1461,7 @@ process last to avoid conflicts with marked up links -->
 <xsl:choose>
 <!-- Handle triple backticks state changes -->
 <xsl:when test="starts-with($line, '```')">
-<!-- Simply toggle the state -->
+<!-- toggle collecting headers for TOC when in any ``` block-->
 <xsl:call-template name="generate-toc">
 <xsl:with-param name="text" select="$rest"/>
 <xsl:with-param name="in-triple-backticks-block" select="not($in-triple-backticks-block)"/>
@@ -1817,7 +1910,7 @@ process last to avoid conflicts with marked up links -->
 <xsl:with-param name="text" select="$processed-content"/>
 </xsl:call-template>
 </xsl:when>
-<!-- Single line with no breaks - just apply inline formatting -->
+<!-- Single line with no breaks - only apply inline formatting -->
 <xsl:otherwise>
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="normalize-space($processed-content)"/>

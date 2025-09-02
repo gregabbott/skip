@@ -1,15 +1,26 @@
 <?xml-stylesheet type="text/xsl" href="0.xsl"?><x>
+---
+name: Log
+note: Newest at top
+date: 2025-08-27
+---
 <!-- 
 Project: Markdown to HTML via XSLT
 Copyright 2025 Greg Abbott 
 V1 2025_0826
 V 2025_0828
 -->
----
-name: Change Log
-note: Newest at top
----
 - Since: 2025-08-26
+
+# 2025_0902
+```
+- Adds "Pages" page (sorted new to old)
+- Adds "previous page" "next page" navigation
+-- Uses same pages list page data
+- Integrates separate feed maker tool to generate pages list
+- Styles external links (links starting 'http')
+-- (Internal links use relative links)
+```
 
 # 2025_0831
 ```
