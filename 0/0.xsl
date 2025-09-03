@@ -30,7 +30,7 @@ doctype-system="about:legacy-compat"
 <meta name="color-scheme" content="light dark" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link href="../0/0.css" rel="stylesheet" />
-<title>SITE_TITLE - <xsl:value-of select="$page-title" /></title>
+<title>Skip - <xsl:value-of select="$page-title" /></title>
 </head>
 <body>
 <a href="#post" class="skip_link" accesskey="3" tabindex="0">
