@@ -1,15 +1,15 @@
 {
-  "posts_folder": "p",
-  "posts_extension": "xml",
-  "ignore_posts_starting": "_",
-  "make_sitemap": false,
-  "make_page_list_page": false,
-  "make_page_list_xsl": true,
-  "make_json_feed": false,
-  "site_name": "Skip",
-  "site_url": "https://gregabbott.pages.dev/skip/",
-  "item_title": "name",
-  "item_date_published": "date",
-  "item_date_modified": "edit",
-  "item_content": "gist"
+"posts_folder": "p",
+"posts_extension": "xml",
+"ignore_posts_starting": "_",
+"make_sitemap": false,
+"make_page_list_page": false,
+"make_page_list_xsl": true,
+"make_json_feed": false,
+"site_name": "Skip",
+"site_url": "https://gregabbott.pages.dev/skip/",
+"item_title": "name",
+"item_date_published": "date",
+"item_date_modified": "edit",
+"item_content": "gist"
 }

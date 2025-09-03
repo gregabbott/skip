@@ -20,12 +20,7 @@ V 2025-08-28
 - c.css      Optional styles sheet
 ```
 
-## Page
-### Markup
-- Markup may start with a YAML block.
-- Content may occur after YAML before any first heading.
-
-### HTML (Output)
+## HTML (Output)
 - Name: Set via YAML `name` property value.
 - Lead: Any content before first heading found in markup.
 - Map: Table of Contents (If page has headings).
@@ -33,8 +28,50 @@ V 2025-08-28
 -- One section per heading and its content.
 - Footer
 
-# Features
-Markup include some pre-markdown, markdown, and custom conventions.
+# Markup
+Markup includes a mix of common, markdown and custom conventions.
+
+## YAML
+Each page should start with a YAML block. Ideally:
+
+```
+---
+name: Page Title
+date: yyyy-MM-dd
+---
+```
+
+### Name
+- The YAML name (display) and file name (url) should pair:
+-- e.g. `Page Title` should save as `page-title`
+-- This simplifies writing [[#links]]:
+--- `[[Some Page Name]]` will point to `some-page-name.xml`.
+
+### Date
+- Accepts any pattern with digits given in big to small order:
+-- yyyy MM dd hh mm ss µµµ (any non digit between)
+-- e.g. `yyyy`, `yyyy-MM-ddThh:mm:ss`, `yyyy_MMdd_hhmm`
+
+
+## Headings
+
+```
+# 1 Hash Heading
+## 2 Hash Heading
+### 3 Hash Heading
+#### 4 Hash Heading
+##### 5 Hash Heading
+###### 6 Hash Heading
+```
+
+The parser:
+- Generates URL safe IDs for each heading.
+- Adds anchor link to each heading.
+- Makes a map^[Table of Contents] if the markup has multiple headings.
+
+### Lead Section
+Any content before any first heading goes into a "Lead" section.
+This section sits between the page title and the page map.
 
 ## Keyboard
 - Tab key should navigate the page (subject to browser config)
@@ -87,23 +124,6 @@ Inline style only ^[Footnote text]. Handle long footnotes ^[Long footnotes shoul
 Sequential: Normal text, **bold** text, *italic* text, ~~strike-through~~ text, `inline code` text, [link to log](log).
 
 Mixed: **bold and *italic* together** or ~~**bold strike-through**~~.
-
-
-
-## Headings
-The parser:
-- Generates url safe IDs for each heading.
-- Adds anchor link to each heading
-- Makes a Table of Contents if the markup has over one heading.
-
-```
-# 1 Hash Heading
-## 2 Hash Heading  
-### 3 Hash Heading
-#### 4 Hash Heading
-##### 5 Hash Heading
-###### 6 Hash Heading
-```
 
 ## Lists
 
@@ -190,26 +210,26 @@ const log = a => {
 log(`hello`)
 ```
 
-### HTML 
-HTML blocks clash with XML.
-Options include:
+### HTML
+Because HTML in normal code fences clashes with XML,
+the markup has a dedicated HTML block markup.
 
-- Write all angle brackets as ampersand codes
-- Wrap the content inside a code block with CDATA tags
+#### Show
+<html show="code">
+<div style="background: yellow; padding: 10px;">
+  <h3>Present HTML as Code</h3>
+</div>
+</html>
 
-```
-&lt;p&gt;This version uses ampersand codes for angle brackets &lt;/p&gt;
-```
-
-```<![CDATA[<!DOCTYPE html>
+#### Render
 <html>
-<head>
-<title>This version escapes the block with CDATA</title>
-</head>
-<body>
-</body>
-</html>]]>
-```
+<div style="background: yellow; padding: 10px;">
+<h3>The tool renders the HTML in this block</h3>
+To print angle brackets type: '&lt;' and '&gt;' (See markup)
+</div>
+</html>
+
+Inline JavaScript runs if included in the above block type.
 
 ## Horizontal Rules
 

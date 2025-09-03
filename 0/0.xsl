@@ -1,7 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" 
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-xmlns:msxsl="urn:schemas-microsoft-com:xslt"
 xmlns:exsl="http://exslt.org/common"
 extension-element-prefixes="msxsl exsl">  
 <!-- file must exist: --><xsl:import href="pages.xsl"/>
@@ -11,12 +9,20 @@ indent="yes"
 encoding="UTF-8"
 doctype-system="about:legacy-compat"
 />
+
 <!-- Main -->
 <xsl:template match="/">
 <xsl:variable name="page-title">
+<xsl:choose>
+<xsl:when test="/*/@name">
+<xsl:value-of select="/*/@name"/>
+</xsl:when>
+<xsl:otherwise>
 <xsl:call-template name="extract-yaml-title">
 <xsl:with-param name="text" select="." />
 </xsl:call-template>
+</xsl:otherwise>
+</xsl:choose>
 </xsl:variable>
 <html lang="en">
 <head>
@@ -24,7 +30,7 @@ doctype-system="about:legacy-compat"
 <meta name="color-scheme" content="light dark" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link href="../0/0.css" rel="stylesheet" />
-<title>Skip - <xsl:value-of select="$page-title" /></title>
+<title>SITE_TITLE - <xsl:value-of select="$page-title" /></title>
 </head>
 <body>
 <a href="#post" class="skip_link" accesskey="3" tabindex="0">
@@ -33,7 +39,7 @@ doctype-system="about:legacy-compat"
 <div id="_nav_and_main">
 <nav id="site_nav">
 <ul>
-<li><a href="index.xml">Home</a></li>
+<li><a href="markdown-to-html-with-xslt.xml">Home</a></li>
 <li><a href="log.xml">Log</a></li>
 <li><a href="info.xml">Info</a></li>
 </ul>
@@ -45,9 +51,10 @@ doctype-system="about:legacy-compat"
 <a href="#top" title="Access Key 1" accesskey="1">#</a>
 </h1>
 </header>
+<!-- Extract content but handle HTML elements -->
 <xsl:variable name="content">
-<xsl:call-template name="remove-yaml-frontmatter">
-<xsl:with-param name="text" select="." />
+<xsl:call-template name="serialize-mixed-content">
+<xsl:with-param name="nodes" select="/*/node()"/>
 </xsl:call-template>
 </xsl:variable>
 <xsl:variable name="has-headers">
@@ -64,7 +71,7 @@ doctype-system="about:legacy-compat"
 </xsl:variable>
 <xsl:if test="normalize-space($lead-content) != ''">
 <section class="lead">
-<xsl:call-template name="process-content">
+<xsl:call-template name="process-mixed-text">
 <xsl:with-param name="text" select="$lead-content" />
 <xsl:with-param name="enable-sections" select="false()" />
 </xsl:call-template>
@@ -93,13 +100,13 @@ doctype-system="about:legacy-compat"
 <xsl:with-param name="text" select="$content" />
 </xsl:call-template>
 </xsl:variable>
-<xsl:call-template name="process-content">
+<xsl:call-template name="process-mixed-text">
 <xsl:with-param name="text" select="$content-from-first-header" />
 <xsl:with-param name="enable-sections" select="true()" />
 </xsl:call-template>
 </xsl:when>
 <xsl:otherwise>
-<xsl:call-template name="process-content">
+<xsl:call-template name="process-mixed-text">
 <xsl:with-param name="text" select="$content" />
 <xsl:with-param name="enable-sections" select="false()" />
 </xsl:call-template>
@@ -110,115 +117,113 @@ doctype-system="about:legacy-compat"
 </xsl:if>
 </article>
 </main>
-<!-- Call prev-next (only outputs if prev or next exists -->
+<!-- Call prev-next -->
 <xsl:call-template name="prev-next-nav">
 <xsl:with-param name="current-page-name" select="$page-title"/>
 </xsl:call-template>
-<!-- end prev-next-->
 </div><!--end _nav_and_main-->
 <footer>
-<a id="to_top" href="#top">Top</a>
-<!--Notice-->
 <span
-title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg Abbott 2025. Version 1: 2025-08-26. Version: 2025-09-02">
+title="SKIP - Markup and Markdown to HTML via .xsl (XSLT 1.0) sheet. By and copyright Greg Abbott 2025. First Version: 2025-08-26. Version: 2025-09-03">
 &#169; 2025
 <a href="https://gregabbott.pages.dev/">Greg Abbott</a>.
 </span>
+<a id="to_top" href="#top">Top</a>
 <li><a href="pages.xml">Pages</a></li>
 </footer>
 </body>
 </html>
 </xsl:template>
 <!-- Previous and Next Page Nav -->
-  <xsl:template name="prev-next-nav">
-  <!-- Rules
-  Do nothing if:
-    page list Empty
-    page list lacks current Page name
-    page List has one item (nothing to link to) 
-  Else make <nav> element &&
-    if First page only: only "next" link
-    if Last page only: only "prev" link
-    if Middle page: "prev" and "next" links 
- -->
-    <xsl:param name="current-page-name"/>
-    <xsl:variable name="page-list" select="exsl:node-set($ps)/p"/>
-    <xsl:variable name="matching-page" select="$page-list[@n = $current-page-name]"/>
-    <!-- Only proceed if current page found in page list -->
-    <xsl:if test="$matching-page">
-      <xsl:variable name="current-position" select="count($matching-page/preceding-sibling::p) + 1"/>
-      <xsl:variable name="total-pages" select="count($page-list)"/>
-      <!-- Check for prev or next links (relative to current page) -->
-      <xsl:variable name="has-prev" select="$current-position > 1"/>
-      <xsl:variable name="has-next" select="$current-position &lt; $total-pages"/>
-      <!-- Only create nav element if it holds >0 links -->
-      <xsl:if test="$has-prev or $has-next">
-        <nav class="prev_next">
-        <hr/>
-          <!-- Previous, left, Newer
-          the page created/dated after the current one
-          Higher / earlier in list 
-          -->
-         <xsl:choose>
-      <xsl:when test="$has-prev">
-        <xsl:variable name="prev-page" select="$page-list[$current-position - 1]"/>
-        <div class="prev">
-          <a tabindex="0" href="{$prev-page/@u}.xml">
-            <span>Newer</span><br/>
-            <span><xsl:value-of select="$prev-page/@n"/></span>
-          </a>
-        </div>
-      </xsl:when>
-      <xsl:otherwise>
-        <div class="no_prev">
-          <span>
-            <span>Newer</span><br/>
-            <span>No newer posts</span>
-          </span>
-        </div>
-      </xsl:otherwise>
-    </xsl:choose>
-          <!-- next, right, Older
-          the page created/dated before the current one
-          Lower / later in list 
-          -->
-          <xsl:choose>
-      <xsl:when test="$has-next">
-        <xsl:variable name="next-page" select="$page-list[$current-position + 1]"/>
-        <div class="next">
-          <a tabindex="0" href="{$next-page/@u}.xml">
-            <span>Older</span><br/>
-            <span><xsl:value-of select="$next-page/@n"/></span>
-          </a>
-        </div>
-      </xsl:when>
-      <xsl:otherwise>
-        <div class="no_next">
-          <span>
-          <span>Older</span><br/>
-          <span>No older posts</span>
-          </span>
-        </div>
-      </xsl:otherwise>
-    </xsl:choose>
-        </nav>
-      </xsl:if>
-    </xsl:if>
-  </xsl:template>
- <!--  PAGE LIST {p:page item,u:url,n:name}-->
-  <xsl:template name="simple-nav-list">
-    <ul>
-      <xsl:for-each select="exsl:node-set($ps)/p">
-        <li>
-          <a href="{@u}.xml">
-          <xsl:value-of select="@d"/>
-          <xsl:text> </xsl:text>
-          <xsl:value-of select="@n"/>
-          </a>
-        </li>
-      </xsl:for-each>
-    </ul>
-  </xsl:template>
+<xsl:template name="prev-next-nav">
+<!-- Rules
+Do nothing if:
+page list Empty
+page list lacks current Page name
+page List has one item (nothing to link to) 
+Else make <nav> element &&
+if First page only: only "next" link
+if Last page only: only "prev" link
+if Middle page: "prev" and "next" links 
+-->
+<xsl:param name="current-page-name"/>
+<xsl:variable name="page-list" select="exsl:node-set($ps)/p"/>
+<xsl:variable name="matching-page" select="$page-list[@n = $current-page-name]"/>
+<!-- Only proceed if current page found in page list -->
+<xsl:if test="$matching-page">
+<xsl:variable name="current-position" select="count($matching-page/preceding-sibling::p) + 1"/>
+<xsl:variable name="total-pages" select="count($page-list)"/>
+<!-- Check for prev or next links (relative to current page) -->
+<xsl:variable name="has-prev" select="$current-position > 1"/>
+<xsl:variable name="has-next" select="$current-position &lt; $total-pages"/>
+<!-- Only create nav element if it holds >0 links -->
+<xsl:if test="$has-prev or $has-next">
+<nav class="prev_next">
+<hr/>
+<!-- Previous, left, Newer
+the page created/dated after the current one
+Higher / earlier in list 
+-->
+<xsl:choose>
+<xsl:when test="$has-prev">
+<xsl:variable name="prev-page" select="$page-list[$current-position - 1]"/>
+<div class="prev">
+<a tabindex="0" href="{$prev-page/@u}.xml">
+<span>Newer</span><br/>
+<span><xsl:value-of select="$prev-page/@n"/></span>
+</a>
+</div>
+</xsl:when>
+<xsl:otherwise>
+<div class="no_prev">
+<span>
+<span>Newer</span><br/>
+<span>No newer posts</span>
+</span>
+</div>
+</xsl:otherwise>
+</xsl:choose>
+<!-- next, right, Older
+the page created/dated before the current one
+Lower / later in list 
+-->
+<xsl:choose>
+<xsl:when test="$has-next">
+<xsl:variable name="next-page" select="$page-list[$current-position + 1]"/>
+<div class="next">
+<a tabindex="0" href="{$next-page/@u}.xml">
+<span>Older</span><br/>
+<span><xsl:value-of select="$next-page/@n"/></span>
+</a>
+</div>
+</xsl:when>
+<xsl:otherwise>
+<div class="no_next">
+<span>
+<span>Older</span><br/>
+<span>No older posts</span>
+</span>
+</div>
+</xsl:otherwise>
+</xsl:choose>
+</nav>
+</xsl:if>
+</xsl:if>
+</xsl:template>
+<!--  PAGE LIST {p:page item,u:url,n:name}-->
+<xsl:template name="simple-nav-list">
+<ul>
+<xsl:for-each select="exsl:node-set($ps)/p">
+<li>
+<a href="{@u}.xml">
+<xsl:value-of select="@d"/>
+<xsl:text> </xsl:text>
+<xsl:value-of select="@n"/>
+</a>
+</li>
+</xsl:for-each>
+</ul>
+</xsl:template>
 <!-- Unified content processing entry point -->
 <xsl:template name="process-content">
 <xsl:param name="text"/>
@@ -233,6 +238,7 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:with-param name="section-level" select="0"/>
 <xsl:with-param name="paragraph-accumulator" select="''"/>
 <xsl:with-param name="enable-sections" select="$enable-sections"/>
+<xsl:with-param name="open-div" select="false()"/>
 </xsl:call-template>
 </xsl:template>
 <!-- Main processing template - preserves original structure -->
@@ -246,6 +252,7 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:param name="section-level"/>
 <xsl:param name="paragraph-accumulator"/>
 <xsl:param name="enable-sections" select="false()"/>
+<xsl:param name="open-div" select="false()"/>
 <xsl:if test="string-length($remaining) > 0">
 <xsl:variable name="line">
 <xsl:choose>
@@ -318,6 +325,7 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:with-param name="section-level" select="$section-level"/>
 <xsl:with-param name="paragraph-accumulator" select="''"/>
 <xsl:with-param name="enable-sections" select="$enable-sections"/>
+<xsl:with-param name="open-div" select="$open-div"/>
 </xsl:call-template>
 </xsl:when>
 <xsl:otherwise>
@@ -332,12 +340,12 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:variable name="after-details" select="substring-after($line, '```details')"/>
 <xsl:variable name="trimmed-after" select="normalize-space($after-details)"/>
 <xsl:variable name="summary-text">
-  <xsl:choose>
-    <xsl:when test="starts-with($trimmed-after, '&quot;') and contains(substring-after($trimmed-after, '&quot;'), '&quot;')">
-      <xsl:value-of select="substring-before(substring-after($trimmed-after, '&quot;'), '&quot;')"/>
-    </xsl:when>
-    <xsl:otherwise>Details</xsl:otherwise>
-  </xsl:choose>
+<xsl:choose>
+<xsl:when test="starts-with($trimmed-after, '&quot;') and contains(substring-after($trimmed-after, '&quot;'), '&quot;')">
+<xsl:value-of select="substring-before(substring-after($trimmed-after, '&quot;'), '&quot;')"/>
+</xsl:when>
+<xsl:otherwise>Details</xsl:otherwise>
+</xsl:choose>
 </xsl:variable>
 <xsl:value-of select="$summary-text"/>
 <xsl:text disable-output-escaping="yes">&lt;/summary&gt;&lt;div&gt;
@@ -358,6 +366,7 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:with-param name="section-level" select="$section-level"/>
 <xsl:with-param name="paragraph-accumulator" select="''"/>
 <xsl:with-param name="enable-sections" select="$enable-sections"/>
+<xsl:with-param name="open-div" select="$open-div"/>
 </xsl:call-template>
 </xsl:otherwise>
 </xsl:choose>
@@ -387,13 +396,14 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:with-param name="section-level" select="$section-level"/>
 <xsl:with-param name="paragraph-accumulator" select="''"/>
 <xsl:with-param name="enable-sections" select="$enable-sections"/>
+<xsl:with-param name="open-div" select="$open-div"/>
 </xsl:call-template>
 </xsl:when>
 </xsl:choose>
 </xsl:when>
 <!-- Inside a triple backticks block -->
-<xsl:when test="$in-triple-backticks-block = true() and $block-type = 'code'">
 <!-- Code block: output as-is -->
+<xsl:when test="$in-triple-backticks-block = true() and $block-type = 'code'">
 <xsl:value-of select="$line"/>
 <xsl:if test="string-length($rest) > 0">
 <xsl:text>&#10;</xsl:text>
@@ -408,6 +418,7 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:with-param name="section-level" select="$section-level"/>
 <xsl:with-param name="paragraph-accumulator" select="$paragraph-accumulator"/>
 <xsl:with-param name="enable-sections" select="$enable-sections"/>
+<xsl:with-param name="open-div" select="$open-div"/>
 </xsl:call-template>
 </xsl:when>
 <!-- Empty line -->
@@ -430,6 +441,7 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:with-param name="section-level" select="$section-level"/>
 <xsl:with-param name="paragraph-accumulator" select="''"/>
 <xsl:with-param name="enable-sections" select="$enable-sections"/>
+<xsl:with-param name="open-div" select="$open-div"/>
 </xsl:call-template>
 </xsl:when>
 <!-- Headers - only process if not in any triple backticks block -->
@@ -443,7 +455,6 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 </xsl:call-template>
 </xsl:variable>
 <!-- Section management (only outside blockquotes and when enabled) -->
-<xsl:variable name="new-section-level">
 <xsl:choose>
 <xsl:when test="$enable-sections">
 <xsl:call-template name="close-lists">
@@ -451,13 +462,31 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:with-param name="level" select="$list-level"/>
 <xsl:with-param name="list-type" select="$list-type"/>
 </xsl:call-template>
+<!-- Close current div if open -->
+<xsl:if test="$open-div">
+<xsl:text disable-output-escaping="yes">&lt;/div&gt;</xsl:text>
+</xsl:if>
+<!-- Close sections if the new heading is at same level or higher (shallower) -->
 <xsl:if test="$heading-level &lt;= $section-level and $section-level > 0">
 <xsl:call-template name="close-sections">
 <xsl:with-param name="from-level" select="$section-level"/>
 <xsl:with-param name="to-level" select="$heading-level - 1"/>
 </xsl:call-template>
 </xsl:if>
-<xsl:text disable-output-escaping="yes">&lt;section&gt;</xsl:text>
+<!-- Open new section and div -->
+<xsl:text disable-output-escaping="yes">&lt;section&gt;&lt;div&gt;</xsl:text>
+</xsl:when>
+<xsl:otherwise>
+<xsl:call-template name="close-lists">
+<xsl:with-param name="in-list" select="$in-list"/>
+<xsl:with-param name="level" select="$list-level"/>
+<xsl:with-param name="list-type" select="$list-type"/>
+</xsl:call-template>
+</xsl:otherwise>
+</xsl:choose>
+<xsl:variable name="new-section-level">
+<xsl:choose>
+<xsl:when test="$enable-sections">
 <xsl:value-of select="$heading-level"/>
 </xsl:when>
 <xsl:otherwise>
@@ -480,6 +509,7 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:with-param name="section-level" select="$new-section-level"/>
 <xsl:with-param name="paragraph-accumulator" select="''"/>
 <xsl:with-param name="enable-sections" select="$enable-sections"/>
+<xsl:with-param name="open-div" select="$enable-sections"/>
 </xsl:call-template>
 </xsl:when>
 <!-- Task lists -->
@@ -515,6 +545,7 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:with-param name="section-level" select="$section-level"/>
 <xsl:with-param name="paragraph-accumulator" select="''"/>
 <xsl:with-param name="enable-sections" select="$enable-sections"/>
+<xsl:with-param name="open-div" select="$open-div"/>
 </xsl:call-template>
 </xsl:when>
 <!-- Ordered list items -->
@@ -546,6 +577,7 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:with-param name="section-level" select="$section-level"/>
 <xsl:with-param name="paragraph-accumulator" select="''"/>
 <xsl:with-param name="enable-sections" select="$enable-sections"/>
+<xsl:with-param name="open-div" select="$open-div"/>
 </xsl:call-template>
 </xsl:when>
 <!-- Multi-level unordered list handling -->
@@ -586,6 +618,7 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:with-param name="section-level" select="$section-level"/>
 <xsl:with-param name="paragraph-accumulator" select="''"/>
 <xsl:with-param name="enable-sections" select="$enable-sections"/>
+<xsl:with-param name="open-div" select="$open-div"/>
 </xsl:call-template>
 </xsl:when>
 <!-- Horizontal rule -->
@@ -606,6 +639,7 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:with-param name="section-level" select="$section-level"/>
 <xsl:with-param name="paragraph-accumulator" select="''"/>
 <xsl:with-param name="enable-sections" select="$enable-sections"/>
+<xsl:with-param name="open-div" select="$open-div"/>
 </xsl:call-template>
 </xsl:when>
 <!-- Image-only line -->
@@ -631,6 +665,7 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:with-param name="section-level" select="$section-level"/>
 <xsl:with-param name="paragraph-accumulator" select="''"/>
 <xsl:with-param name="enable-sections" select="$enable-sections"/>
+<xsl:with-param name="open-div" select="$open-div"/>
 </xsl:call-template>
 </xsl:when>
 <!-- Regular content line -->
@@ -655,6 +690,7 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 <xsl:with-param name="section-level" select="$section-level"/>
 <xsl:with-param name="paragraph-accumulator" select="$new-accumulator"/>
 <xsl:with-param name="enable-sections" select="$enable-sections"/>
+<xsl:with-param name="open-div" select="$open-div"/>
 </xsl:call-template>
 </xsl:otherwise>
 </xsl:choose>
@@ -683,6 +719,11 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 </xsl:when>
 </xsl:choose>
 </xsl:if>
+<!-- Close open div -->
+<xsl:if test="$open-div">
+<xsl:text disable-output-escaping="yes">&lt;/div&gt;</xsl:text>
+</xsl:if>
+<!-- Close open sections -->
 <xsl:if test="$section-level > 0">
 <xsl:call-template name="close-sections">
 <xsl:with-param name="from-level" select="$section-level"/>
@@ -1191,13 +1232,37 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 </xsl:template>
 <xsl:template name="generate-heading-id">
 <xsl:param name="text"/>
-<xsl:value-of select="translate(normalize-space(translate($text, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')), ' .,!?;:()', '-------')"/>
+<xsl:call-template name="clean-slug">
+<xsl:with-param name="text" select="normalize-space(translate($text, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'))"/>
+</xsl:call-template>
 </xsl:template>
 <!-- Inline processing -->
 <xsl:template name="process-inline">
 <xsl:param name="text"/>
 <xsl:choose>
-<!-- Footnotes ^[text] (toggle via css) -->
+<!-- Inline code (process FIRST - most literal) -->
+<xsl:when test="contains($text, '`')">
+<!-- Process text before backtick for other inline elements -->
+<xsl:call-template name="process-inline">
+<xsl:with-param name="text" select="substring-before($text, '`')"/>
+</xsl:call-template>
+<xsl:variable name="after-first" select="substring-after($text, '`')"/>
+<xsl:choose>
+<xsl:when test="contains($after-first, '`')">
+<code><xsl:value-of select="substring-before($after-first, '`')"/></code>
+<xsl:call-template name="process-inline">
+<xsl:with-param name="text" select="substring-after($after-first, '`')"/>
+</xsl:call-template>
+</xsl:when>
+<xsl:otherwise>
+<xsl:text>`</xsl:text>
+<xsl:call-template name="process-inline">
+<xsl:with-param name="text" select="$after-first"/>
+</xsl:call-template>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:when>
+<!-- Footnotes ^[text] -->
 <xsl:when test="contains($text, '^[') and contains(substring-after($text, '^['), ']')">
 <xsl:value-of select="substring-before($text, '^[')"/>
 <xsl:variable name="footnote-text" select="substring-before(substring-after($text, '^['), ']')"/>
@@ -1209,33 +1274,6 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 </label>
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="$after-footnote"/>
-</xsl:call-template>
-</xsl:when>
-<!-- Wikilinks [[page]] or [[page|text]] etc -->
-<xsl:when test="contains($text, '[[') and contains(substring-after($text, '[['), ']]')">
-<xsl:value-of select="substring-before($text, '[[')"/>
-<xsl:variable name="wikilink-content" select="substring-before(substring-after($text, '[['), ']]')"/>
-<xsl:variable name="after-wikilink" select="substring-after($text, ']]')"/>
-<xsl:choose>
-<xsl:when test="contains($wikilink-content, '|')">
-<xsl:variable name="link-target" select="substring-before($wikilink-content, '|')"/>
-<xsl:variable name="link-text" select="substring-after($wikilink-content, '|')"/>
-<xsl:call-template name="process-link">
-<xsl:with-param name="url" select="$link-target"/>
-<xsl:with-param name="link-text" select="$link-text"/>
-<xsl:with-param name="auto-generate-text" select="false()"/>
-</xsl:call-template>
-</xsl:when>
-<xsl:otherwise>
-<xsl:call-template name="process-link">
-<xsl:with-param name="url" select="$wikilink-content"/>
-<xsl:with-param name="link-text" select="$wikilink-content"/>
-<xsl:with-param name="auto-generate-text" select="false()"/>
-</xsl:call-template>
-</xsl:otherwise>
-</xsl:choose>
-<xsl:call-template name="process-inline">
-<xsl:with-param name="text" select="$after-wikilink"/>
 </xsl:call-template>
 </xsl:when>
 <!-- Images ![alt](src) -->
@@ -1280,27 +1318,49 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 </xsl:otherwise>
 </xsl:choose>
 </xsl:when>
-<!-- Inline code (process before '**' and '*') -->
-<xsl:when test="contains($text, '`')">
-<!-- Process text before backtick for other inline elements -->
-<xsl:call-template name="process-inline">
-<xsl:with-param name="text" select="substring-before($text, '`')"/>
-</xsl:call-template>
-<xsl:variable name="after-first" select="substring-after($text, '`')"/>
+<!-- Wikilinks [[page]] or [[page|text]] etc -->
+<xsl:when test="contains($text, '[[') and contains(substring-after($text, '[['), ']]')">
+<xsl:value-of select="substring-before($text, '[[')"/>
+<xsl:variable name="wikilink-content" select="substring-before(substring-after($text, '[['), ']]')"/>
+<xsl:variable name="after-wikilink" select="substring-after($text, ']]')"/>
 <xsl:choose>
-<xsl:when test="contains($after-first, '`')">
-<code><xsl:value-of select="substring-before($after-first, '`')"/></code>
-<xsl:call-template name="process-inline">
-<xsl:with-param name="text" select="substring-after($after-first, '`')"/>
+<xsl:when test="contains($wikilink-content, '|')">
+<xsl:variable name="link-target" select="substring-before($wikilink-content, '|')"/>
+<xsl:variable name="link-text" select="substring-after($wikilink-content, '|')"/>
+<xsl:call-template name="process-link">
+<xsl:with-param name="url" select="$link-target"/>
+<xsl:with-param name="link-text" select="$link-text"/>
+<xsl:with-param name="auto-generate-text" select="false()"/>
 </xsl:call-template>
 </xsl:when>
 <xsl:otherwise>
-<xsl:text>`</xsl:text>
-<xsl:call-template name="process-inline">
-<xsl:with-param name="text" select="$after-first"/>
+<xsl:call-template name="process-link">
+<xsl:with-param name="url" select="$wikilink-content"/>
+<xsl:with-param name="link-text" select="$wikilink-content"/>
+<xsl:with-param name="auto-generate-text" select="false()"/>
 </xsl:call-template>
 </xsl:otherwise>
 </xsl:choose>
+<xsl:call-template name="process-inline">
+<xsl:with-param name="text" select="$after-wikilink"/>
+</xsl:call-template>
+</xsl:when>
+<!-- Links [text](url) -->
+<xsl:when test="contains($text, '[') and contains(substring-after($text, '['), '](')">
+<xsl:value-of select="substring-before($text, '[')"/>
+<xsl:variable name="link-text" select="substring-before(substring-after($text, '['), ']')"/>
+<xsl:variable name="after-bracket" select="substring-after($text, ']')"/>
+<xsl:if test="starts-with($after-bracket, '(')">
+<xsl:variable name="url" select="substring-before(substring-after($after-bracket, '('), ')')"/>
+<xsl:call-template name="process-link">
+<xsl:with-param name="url" select="$url"/>
+<xsl:with-param name="link-text" select="$link-text"/>
+<xsl:with-param name="auto-generate-text" select="true()"/>
+</xsl:call-template>
+<xsl:call-template name="process-inline">
+<xsl:with-param name="text" select="substring-after($after-bracket, ')')"/>
+</xsl:call-template>
+</xsl:if>
 </xsl:when>
 <!-- Strike-through -->
 <xsl:when test="contains($text, '~~')">
@@ -1391,23 +1451,6 @@ title="Markdown to HTML Processor .xsl (XSLT 1.0) sheet. By and copyright Greg A
 </xsl:call-template>
 </xsl:otherwise>
 </xsl:choose>
-</xsl:when>
-<!-- Links [text](url) -->
-<xsl:when test="contains($text, '[') and contains(substring-after($text, '['), '](')">
-<xsl:value-of select="substring-before($text, '[')"/>
-<xsl:variable name="link-text" select="substring-before(substring-after($text, '['), ']')"/>
-<xsl:variable name="after-bracket" select="substring-after($text, ']')"/>
-<xsl:if test="starts-with($after-bracket, '(')">
-<xsl:variable name="url" select="substring-before(substring-after($after-bracket, '('), ')')"/>
-<xsl:call-template name="process-link">
-<xsl:with-param name="url" select="$url"/>
-<xsl:with-param name="link-text" select="$link-text"/>
-<xsl:with-param name="auto-generate-text" select="true()"/>
-</xsl:call-template>
-<xsl:call-template name="process-inline">
-<xsl:with-param name="text" select="substring-after($after-bracket, ')')"/>
-</xsl:call-template>
-</xsl:if>
 </xsl:when>
 <!-- Line breaks (two spaces at end) -->
 <xsl:when test="substring($text, string-length($text) - 1) = '  '">
@@ -1511,18 +1554,21 @@ process last to avoid conflicts with marked up links -->
 <xsl:template name="make-wiki-url">
 <xsl:param name="text"/>
 <xsl:param name="no-extension" select="false()"/>
-<xsl:variable name="trimmed" select="normalize-space($text)"/>
-<xsl:variable name="lowercase" select="translate($trimmed, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')"/>
-<xsl:variable name="with-dashes" select="translate($lowercase, ' ', '-')"/>
+<xsl:variable name="clean-slug">
+<xsl:call-template name="clean-slug">
+<xsl:with-param name="text" select="normalize-space($text)"/>
+</xsl:call-template>
+</xsl:variable>
 <xsl:choose>
 <xsl:when test="$no-extension = true()">
-<xsl:value-of select="$with-dashes"/>
+<xsl:value-of select="$clean-slug"/>
 </xsl:when>
 <xsl:otherwise>
-<xsl:value-of select="concat($with-dashes, '.xml')"/>
+<xsl:value-of select="concat($clean-slug, '.xml')"/>
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
+<!-- process link -->
 <xsl:template name="process-link">
 <xsl:param name="url"/>
 <xsl:param name="link-text"/>
@@ -1575,6 +1621,14 @@ process last to avoid conflicts with marked up links -->
 </xsl:variable>
 <a href="#{$processed-anchor}" tabindex="0"><xsl:value-of select="$clean-link-text"/></a>
 </xsl:when>
+<!-- External URL (contains ://) -->
+<xsl:when test="contains($url, '://')">
+<a href="{$url}" tabindex="0"><xsl:value-of select="$final-link-text"/></a>
+</xsl:when>
+<!-- Literal file path (starts with / or ../) -->
+<xsl:when test="starts-with($url, '/') or starts-with($url, '../') or starts-with($url, './')">
+<a href="{$url}" tabindex="0"><xsl:value-of select="$final-link-text"/></a>
+</xsl:when>
 <!-- Different page with anchor (page.xml#anchor) -->
 <xsl:when test="contains($url, '#') and not(contains($url, '://'))">
 <xsl:variable name="page-part" select="substring-before($url, '#')"/>
@@ -1595,11 +1649,7 @@ process last to avoid conflicts with marked up links -->
 <xsl:value-of select="$final-link-text"/>
 </a>
 </xsl:when>
-<!-- External URL (contains ://) -->
-<xsl:when test="contains($url, '://')">
-<a href="{$url}" tabindex="0"><xsl:value-of select="$final-link-text"/></a>
-</xsl:when>
-<!-- Local page -->
+<!-- Local page (wiki-style processing) -->
 <xsl:otherwise>
 <xsl:variable name="processed-page">
 <xsl:call-template name="process-page-url">
@@ -1609,7 +1659,7 @@ process last to avoid conflicts with marked up links -->
 <a href="{$processed-page}" tabindex="0"><xsl:value-of select="$final-link-text"/></a>
 </xsl:otherwise>
 </xsl:choose>
-</xsl:template>
+</xsl:template><!-- END -->
 <xsl:template name="process-page-url">
 <xsl:param name="url"/>
 <xsl:choose>
@@ -1984,5 +2034,188 @@ process last to avoid conflicts with marked up links -->
 <p>Error processing Markdown content</p>
 <pre><xsl:value-of select="."/></pre>
 </div>
+</xsl:template>
+<!-- Helper template for proper slug generation -->
+<xsl:template name="clean-slug">
+<xsl:param name="text"/>
+<xsl:variable name="lowercase" select="translate($text, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')"/>
+<xsl:variable name="alphanumeric-and-spaces" select="translate($lowercase, '.,!?;:()[]{}/', '----------')"/>
+<xsl:variable name="with-single-dashes">
+<xsl:call-template name="collapse-dashes">
+<xsl:with-param name="text" select="translate($alphanumeric-and-spaces, ' ', '-')"/>
+</xsl:call-template>
+</xsl:variable>
+<xsl:call-template name="trim-dashes">
+<xsl:with-param name="text" select="$with-single-dashes"/>
+</xsl:call-template>
+</xsl:template>
+<!-- Collapse multiple dashes to single dash -->
+<xsl:template name="collapse-dashes">
+<xsl:param name="text"/>
+<xsl:choose>
+<xsl:when test="contains($text, '--')">
+<xsl:call-template name="collapse-dashes">
+<xsl:with-param name="text" select="concat(substring-before($text, '--'), '-', substring-after($text, '--'))"/>
+</xsl:call-template>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$text"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:template>
+<!-- Remove leading and trailing dashes -->
+<xsl:template name="trim-dashes">
+<xsl:param name="text"/>
+<xsl:variable name="no-leading">
+<xsl:choose>
+<xsl:when test="starts-with($text, '-')">
+<xsl:call-template name="trim-dashes">
+<xsl:with-param name="text" select="substring($text, 2)"/>
+</xsl:call-template>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$text"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+<xsl:choose>
+<xsl:when test="substring($no-leading, string-length($no-leading)) = '-'">
+<xsl:value-of select="substring($no-leading, 1, string-length($no-leading) - 1)"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$no-leading"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:template>
+<!-- Serialize mixed content to text with HTML markers (and remove YAML) -->
+<xsl:template name="serialize-mixed-content">
+<xsl:param name="nodes"/>
+<xsl:for-each select="$nodes">
+<xsl:choose>
+<xsl:when test="self::text()">
+<!-- Remove YAML frontmatter from text nodes -->
+<xsl:call-template name="remove-yaml-frontmatter">
+<xsl:with-param name="text" select="."/>
+</xsl:call-template>
+</xsl:when>
+<xsl:when test="name() = 'html'">
+<!-- Create a placeholder with display mode -->
+<xsl:text>&#10;__HTML_BLOCK_</xsl:text>
+<xsl:value-of select="generate-id(.)"/>
+<xsl:text>_</xsl:text>
+<xsl:choose>
+<xsl:when test="@show">
+<xsl:value-of select="@show"/>
+</xsl:when>
+<xsl:otherwise>render</xsl:otherwise>
+</xsl:choose>
+<xsl:text>__&#10;</xsl:text>
+</xsl:when>
+<xsl:otherwise>
+<!-- Handle other elements if needed -->
+<xsl:call-template name="serialize-mixed-content">
+<xsl:with-param name="nodes" select="node()"/>
+</xsl:call-template>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:for-each>
+</xsl:template>
+<!-- Process text that may contain HTML block markers -->
+<xsl:template name="process-mixed-text">
+<xsl:param name="text"/>
+<xsl:param name="enable-sections" select="false()"/>
+<xsl:choose>
+<xsl:when test="contains($text, '__HTML_BLOCK_')">
+<!-- Process text before HTML block -->
+<xsl:variable name="before-html" select="substring-before($text, '__HTML_BLOCK_')"/>
+<xsl:if test="normalize-space($before-html) != ''">
+<xsl:call-template name="process-content">
+<xsl:with-param name="text" select="$before-html"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
+</xsl:call-template>
+</xsl:if>
+<!-- Extract block ID and display mode -->
+<xsl:variable name="after-marker" select="substring-after($text, '__HTML_BLOCK_')"/>
+<xsl:variable name="id-and-mode" select="substring-before($after-marker, '__')"/>
+<xsl:variable name="block-id" select="substring-before($id-and-mode, '_')"/>
+<xsl:variable name="display-mode" select="substring-after($id-and-mode, '_')"/>
+<xsl:variable name="html-element" select="/*/html[generate-id(.) = $block-id]"/>
+<!-- Output based on display mode -->
+<xsl:choose>
+<xsl:when test="$display-mode = 'code'">
+  <!-- Show as code block -->
+  <pre><code>
+    <xsl:variable name="html-content">
+      <xsl:call-template name="serialize-html-content">
+        <xsl:with-param name="nodes" select="$html-element/node()"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:variable name="first-non-blank" 
+                  select="string-length(substring-before($html-content, 
+                          substring(normalize-space($html-content), 1, 1))) + 1"/>
+    <!-- Output from that point -->
+    <xsl:value-of select="substring($html-content, $first-non-blank)"/>
+  </code></pre>
+</xsl:when>
+<xsl:when test="$display-mode = 'both'">
+<!-- Show code first, then rendered -->
+<pre><code><xsl:call-template name="serialize-html-content">
+<xsl:with-param name="nodes" select="$html-element/node()"/>
+</xsl:call-template></code></pre>
+<div class="rendered-output">
+<xsl:copy-of select="$html-element/node()"/>
+</div>
+</xsl:when>
+<xsl:otherwise>
+<!-- Default: render HTML -->
+<xsl:copy-of select="$html-element/node()"/>
+</xsl:otherwise>
+</xsl:choose>
+<!-- Process remaining text -->
+<xsl:variable name="remaining" select="substring-after($after-marker, '__')"/>
+<xsl:if test="normalize-space($remaining) != ''">
+<xsl:call-template name="process-mixed-text">
+<xsl:with-param name="text" select="$remaining"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
+</xsl:call-template>
+</xsl:if>
+</xsl:when>
+<xsl:otherwise>
+<!-- No HTML blocks, process as normal -->
+<xsl:call-template name="process-content">
+<xsl:with-param name="text" select="$text"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
+</xsl:call-template>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:template>
+<!-- Serialize HTML content back to text -->
+<xsl:template name="serialize-html-content">
+<xsl:param name="nodes"/>
+<xsl:for-each select="$nodes">
+<xsl:choose>
+<xsl:when test="self::text()">
+<xsl:value-of select="."/>
+</xsl:when>
+<xsl:when test="self::*">
+<xsl:text>&lt;</xsl:text>
+<xsl:value-of select="name()"/>
+<xsl:for-each select="@*">
+<xsl:text> </xsl:text>
+<xsl:value-of select="name()"/>
+<xsl:text>="</xsl:text>
+<xsl:value-of select="."/>
+<xsl:text>"</xsl:text>
+</xsl:for-each>
+<xsl:text>&gt;</xsl:text>
+<xsl:call-template name="serialize-html-content">
+<xsl:with-param name="nodes" select="node()"/>
+</xsl:call-template>
+<xsl:text>&lt;/</xsl:text>
+<xsl:value-of select="name()"/>
+<xsl:text>&gt;</xsl:text>
+</xsl:when>
+</xsl:choose>
+</xsl:for-each>
 </xsl:template>
 </xsl:stylesheet>

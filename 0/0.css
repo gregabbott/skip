@@ -3,7 +3,7 @@ project: xslt .xsl processor for markdown in .xml to .html
 aspect: styling 
 notice: Copyright 2025 Greg Abbott
 (version 1: 2025-08-26)
-version: 2025_0902
+version: 2025_0903
 */
 @view-transition {
   navigation: auto;
@@ -25,7 +25,8 @@ p {
 }
 a[href^="http"]::after {
   /*external link*/
-  content: '↗';
+  content: '\2197\FE0E';
+  /*^should stop some browsers changing arrow to emoji*/
   font-size: 10px;
   display: inline-block;
   text-decoration: none;

@@ -12,14 +12,24 @@ V 2025_0828
 -->
 - Since: 2025-08-26
 
+# 2025_0903
+```
+- Nests sections per heading in article section (FIXED).
+- Improves name to link conversion (for [[multi word links]])
+-- Avoids multiple dashes: `title - sub` -> `title-subtitle`
+- Handles relative links in markup (e.g. '../folder_up/i/1.png')
+- Add block to render HTML
+- Add alternative block to show HTML as code
+```
+
 # 2025_0902
 ```
-- Adds "Pages" page (sorted new to old)
-- Adds "previous page" "next page" navigation
--- Uses same pages list page data
-- Integrates separate feed maker tool to generate pages list
+- Uses separate feed maker helper tool to make pages list
+-- Adds "Pages" page (sorted new to old)
+-- Adds "previous page" "next page" navigation
 - Styles external links (links starting 'http')
 -- (Internal links use relative links)
+- Structures site into assets, images, pages
 ```
 
 # 2025_0831

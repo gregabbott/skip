@@ -1,32 +1,28 @@
 <xsl:stylesheet version="1.0"
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:variable name="ps">
 <p
-d="2025-09-02"
+d="2025-09-03"
 n="Multi Word Page Name"
-u="multi-word-page-name"/>
+u="p/multi-word-page-name"/>
 <p
-d="2025-09-02"
+d="2025-09-03"
 n="Other"
-u="other"/>
+u="p/other"/>
 <p
 d="2025-09-01"
 n="Pages"
-u="pages"/>
-<p
-d="2025-08-30"
-n="Get Name And Date From Filename"
-u="2025-08-30-get-name-and-date-from-filename"/>
+u="p/pages"/>
 <p
 d="2025-08-27"
 n="Markdown to HTML with XSLT"
-u="index"/>
+u="p/markdown-to-html-with-xslt"/>
 <p
 d="2025-08-26"
 n="Log"
-u="log"/>
+u="p/log"/>
 <p
 d="2025-08-24"
 n="Info"
-u="info"/>
+u="p/info"/>
 </xsl:variable>
 </xsl:stylesheet>
