@@ -18,8 +18,11 @@ V 2025_0828
 - Improves name to link conversion (for [[multi word links]])
 -- Avoids multiple dashes: `title - sub` -> `title-subtitle`
 - Handles relative links in markup (e.g. '../folder_up/i/1.png')
-- Add block to render HTML
-- Add alternative block to show HTML as code
+- Adds a custom HTML block
+-- Renders HTML by default
+-- Shows HTML as code when block has tag
+- Clarifies post navigation code to use terms 'newer' or 'older'
+-- VS. 'next/prev' which could mean 'in a list' or 'in time'
 ```
 
 # 2025_0902

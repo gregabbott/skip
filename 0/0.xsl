@@ -9,7 +9,6 @@ indent="yes"
 encoding="UTF-8"
 doctype-system="about:legacy-compat"
 />
-
 <!-- Main -->
 <xsl:template match="/">
 <xsl:variable name="page-title">
@@ -145,6 +144,13 @@ Else make <nav> element &&
 if First page only: only "next" link
 if Last page only: only "prev" link
 if Middle page: "prev" and "next" links 
+ORDER
+in .xsl pages list (new items added to top)
+  PREV/higher in list means NEWER item
+  NEXT/lower in list means OLDER
+in frontend (showing next older | next newer)
+  Left/Higher == Older item (posted Before Current Page)
+  Right/Lower == Newer item (posted After Current page)
 -->
 <xsl:param name="current-page-name"/>
 <xsl:variable name="page-list" select="exsl:node-set($ps)/p"/>
@@ -153,55 +159,49 @@ if Middle page: "prev" and "next" links
 <xsl:if test="$matching-page">
 <xsl:variable name="current-position" select="count($matching-page/preceding-sibling::p) + 1"/>
 <xsl:variable name="total-pages" select="count($page-list)"/>
-<!-- Check for prev or next links (relative to current page) -->
-<xsl:variable name="has-prev" select="$current-position > 1"/>
-<xsl:variable name="has-next" select="$current-position &lt; $total-pages"/>
+<!-- Check for newer or older posts (relative to current page) -->
+<xsl:variable name="has-newer" select="$current-position > 1"/>
+<xsl:variable name="has-older" select="$current-position &lt; $total-pages"/>
 <!-- Only create nav element if it holds >0 links -->
-<xsl:if test="$has-prev or $has-next">
-<nav class="prev_next">
+<xsl:if test="$has-newer or $has-older">
+<nav class="older_newer">
 <hr/>
-<!-- Previous, left, Newer
-the page created/dated after the current one
-Higher / earlier in list 
--->
+<!-- Older post (lower/later in XSL list) -->
 <xsl:choose>
-<xsl:when test="$has-prev">
-<xsl:variable name="prev-page" select="$page-list[$current-position - 1]"/>
-<div class="prev">
-<a tabindex="0" href="{$prev-page/@u}.xml">
-<span>Newer</span><br/>
-<span><xsl:value-of select="$prev-page/@n"/></span>
+<xsl:when test="$has-older">
+<xsl:variable name="older-page" select="$page-list[$current-position + 1]"/>
+<div class="older_post">
+<a tabindex="0" href="{$older-page/@u}.xml">
+<span>Older</span><br/>
+<span><xsl:value-of select="$older-page/@n"/></span>
 </a>
 </div>
 </xsl:when>
 <xsl:otherwise>
-<div class="no_prev">
+<div class="no_older_post">
 <span>
-<span>Newer</span><br/>
-<span>No newer posts</span>
+<span>Older</span><br/>
+<span>No older posts</span>
 </span>
 </div>
 </xsl:otherwise>
 </xsl:choose>
-<!-- next, right, Older
-the page created/dated before the current one
-Lower / later in list 
--->
+<!-- Newer post (higher/earlier in XSL list) -->
 <xsl:choose>
-<xsl:when test="$has-next">
-<xsl:variable name="next-page" select="$page-list[$current-position + 1]"/>
-<div class="next">
-<a tabindex="0" href="{$next-page/@u}.xml">
-<span>Older</span><br/>
-<span><xsl:value-of select="$next-page/@n"/></span>
+<xsl:when test="$has-newer">
+<xsl:variable name="newer-page" select="$page-list[$current-position - 1]"/>
+<div class="newer_post">
+<a tabindex="0" href="{$newer-page/@u}.xml">
+<span>Newer</span><br/>
+<span><xsl:value-of select="$newer-page/@n"/></span>
 </a>
 </div>
 </xsl:when>
 <xsl:otherwise>
-<div class="no_next">
+<div class="no_newer_post">
 <span>
-<span>Older</span><br/>
-<span>No older posts</span>
+<span>Newer</span><br/>
+<span>No newer posts</span>
 </span>
 </div>
 </xsl:otherwise>
