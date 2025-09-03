@@ -1,38 +1,20 @@
 <?xml-stylesheet type="text/xsl" href="../0/0.xsl"?><x>
 ---
-name: Markdown to HTML with XSLT
+name: Markup
 date: 2025-08-28
 ---
 <!-- 
-Project: Markdown to HTML via XSLT
+Project: SKIP
 Copyright 2025 Greg Abbott 
 V1 2025-08-26
 V 2025-08-28
 -->
-*Proof of concept*
+Skip parses [[plain text]], mark up and Markdown to HTML with [[parts|XSLT]].
 
-# Structure
-## Folder
-```
-- page.xml   Holds Markdown between two lines of XML
-             (View the source code for this page)
-- 0.xsl      Converts each page to HTML
-- c.css      Optional styles sheet
-```
-
-## HTML (Output)
-- Name: Set via YAML `name` property value.
-- Lead: Any content before first heading found in markup.
-- Map: Table of Contents (If page has headings).
-- Main:
--- One section per heading and its content.
-- Footer
-
-# Markup
-Markup includes a mix of common, markdown and custom conventions.
+This page covers the mix of markup conventions Skip uses to transform text.
 
 ## YAML
-Each page should start with a YAML block. Ideally:
+Pages can set and store metadata by starting with a YAML block.
 
 ```
 ---
@@ -216,14 +198,14 @@ the markup has a dedicated HTML block markup.
 
 #### Show
 <html show="code">
-<div style="background: yellow; padding: 10px;">
+<div style="background: #ffff0050; padding: 10px;">
   <h3>Present HTML as Code</h3>
 </div>
 </html>
 
 #### Render
 <html>
-<div style="background: yellow; padding: 10px;">
+<div style="background: #ffff0050; padding: 10px;">
 <h3>The tool renders the HTML in this block</h3>
 To print angle brackets type: '&lt;' and '&gt;' (See markup)
 </div>

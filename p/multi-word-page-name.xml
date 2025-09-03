@@ -5,5 +5,5 @@
 -- No headers
 --- This tests if the parser outputs the correct structure:
 --- (It should not generate a 'lead' section, or a page map).
-- The multi word file name tests [[markdown to html with xslt#links|link parsing]] on other pages.
+- The multi word file name tests [[markup#links|link parsing]] on other pages.
 </x>

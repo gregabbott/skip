@@ -12,16 +12,9 @@ doctype-system="about:legacy-compat"
 <!-- Main -->
 <xsl:template match="/">
 <xsl:variable name="page-title">
-<xsl:choose>
-<xsl:when test="/*/@name">
-<xsl:value-of select="/*/@name"/>
-</xsl:when>
-<xsl:otherwise>
 <xsl:call-template name="extract-yaml-title">
 <xsl:with-param name="text" select="." />
 </xsl:call-template>
-</xsl:otherwise>
-</xsl:choose>
 </xsl:variable>
 <html lang="en">
 <head>
@@ -29,7 +22,12 @@ doctype-system="about:legacy-compat"
 <meta name="color-scheme" content="light dark" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link href="../0/0.css" rel="stylesheet" />
-<title>Skip - <xsl:value-of select="$page-title" /></title>
+<title>Skip 
+<xsl:if test="normalize-space($page-title) != ''">
+  <xsl:text> - </xsl:text>
+  <xsl:value-of select="$page-title" />
+</xsl:if>
+</title>
 </head>
 <body>
 <a href="#post" class="skip_link" accesskey="3" tabindex="0">
@@ -38,17 +36,25 @@ doctype-system="about:legacy-compat"
 <div id="_nav_and_main">
 <nav id="site_nav">
 <ul>
-<li><a href="markdown-to-html-with-xslt.xml">Home</a></li>
+<li><a href="markup.xml">Home</a></li>
+<li><a href="parts.xml">Parts</a></li>
 <li><a href="log.xml">Log</a></li>
 <li><a href="info.xml">Info</a></li>
 </ul>
 </nav>
 <main>
-<header>
-<h1 id="top" class="h">
-<xsl:value-of select="$page-title" />
-<a href="#top" title="Access Key 1" accesskey="1">#</a>
-</h1>
+<header id="top">
+<xsl:choose>
+  <xsl:when test="normalize-space($page-title) != ''">
+    <h1 class="h">
+      <xsl:value-of select="$page-title" />
+      <a href="#top" title="Access Key 1" accesskey="1">#</a>
+    </h1>
+  </xsl:when>
+  <xsl:otherwise>
+    <a href="#top" title="Access Key 1" accesskey="1"></a>
+  </xsl:otherwise>
+</xsl:choose>
 </header>
 <!-- Extract content but handle HTML elements -->
 <xsl:variable name="content">
@@ -123,7 +129,7 @@ doctype-system="about:legacy-compat"
 </div><!--end _nav_and_main-->
 <footer>
 <span
-title="SKIP - Markup and Markdown to HTML via .xsl (XSLT 1.0) sheet. By and copyright Greg Abbott 2025. First Version: 2025-08-26. Version: 2025-09-03">
+title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) sheet. By and copyright Greg Abbott 2025. First Version: 2025-08-26. Version: 2025-09-03">
 &#169; 2025
 <a href="https://gregabbott.pages.dev/">Greg Abbott</a>.
 </span>
@@ -992,28 +998,26 @@ in frontend (showing next older | next newer)
 </xsl:template>
 <!-- YAML processing templates -->
 <xsl:template name="extract-yaml-title">
-<xsl:param name="text"/>
-<xsl:choose>
-<xsl:when test="starts-with(normalize-space($text), '---')">
-<xsl:variable name="after-first-delimiter" select="substring-after($text, '---')"/>
-<xsl:choose>
-<xsl:when test="contains($after-first-delimiter, '---')">
-<xsl:variable name="yaml-content" select="substring-before($after-first-delimiter, '---')"/>
-<xsl:call-template name="parse-yaml-name">
-<xsl:with-param name="yaml" select="$yaml-content"/>
-</xsl:call-template>
-</xsl:when>
-<xsl:otherwise>Nameless</xsl:otherwise>
-</xsl:choose>
-</xsl:when>
-<xsl:otherwise>Nameless</xsl:otherwise>
-</xsl:choose>
+  <xsl:param name="text" />
+  <xsl:choose>
+    <xsl:when test="starts-with(normalize-space($text), '---')">
+      <xsl:variable name="after-first-delimiter" select="substring-after($text, '---')" />
+      <xsl:choose>
+        <xsl:when test="contains($after-first-delimiter, '---')">
+          <xsl:variable name="yaml-content" select="substring-before($after-first-delimiter, '---')" />
+          <xsl:call-template name="parse-yaml-name">
+            <xsl:with-param name="yaml" select="$yaml-content" />
+          </xsl:call-template>
+        </xsl:when>
+      </xsl:choose>
+    </xsl:when>
+  </xsl:choose>
 </xsl:template>
 <xsl:template name="parse-yaml-name">
-<xsl:param name="yaml"/>
-<xsl:call-template name="find-yaml-name">
-<xsl:with-param name="remaining" select="$yaml"/>
-</xsl:call-template>
+  <xsl:param name="yaml" />
+  <xsl:call-template name="find-yaml-name">
+    <xsl:with-param name="remaining" select="$yaml" />
+  </xsl:call-template>
 </xsl:template>
 <xsl:template name="find-yaml-name">
 <xsl:param name="remaining"/>
@@ -1740,7 +1744,7 @@ process last to avoid conflicts with marked up links -->
 </xsl:if>
 </xsl:variable>
 <xsl:choose>
-<!-- Skip url inside Markdown/wiki links -->
+<!-- Skip url inside Markdown link/wiki links -->
 <xsl:when test="$char-before = '(' or $char-before = ']'">
 <xsl:value-of select="$text"/>
 </xsl:when>

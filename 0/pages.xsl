@@ -9,13 +9,21 @@ d="2025-09-03"
 n="Other"
 u="../p/other"/>
 <p
+d="2025-09-03"
+n="Parts"
+u="../p/parts"/>
+<p
+d="2025-09-03"
+n="Plain Text"
+u="../p/plain-text"/>
+<p
 d="2025-09-01"
 n="Pages"
 u="../p/pages"/>
 <p
 d="2025-08-27"
-n="Markdown to HTML with XSLT"
-u="../p/markdown-to-html-with-xslt"/>
+n="Markup"
+u="../p/markup"/>
 <p
 d="2025-08-26"
 n="Log"

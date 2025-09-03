@@ -1,0 +1,8 @@
+<?xml-stylesheet type="text/xsl" href="../0/0.xsl"?><x>
+Touching lines of text form one paragraph. 
+A blank line separates paragraphs.
+
+Raw links become clickable https://example.com
+
+For anything more, read about [[markup|markup Skip supports]].
+</x>

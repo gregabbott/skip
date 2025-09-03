@@ -1,0 +1,26 @@
+<?xml-stylesheet type="text/xsl" href="../0/0.xsl"?><x>
+---
+name: Parts
+date: 2025_0903
+---
+
+# Needed
+Skip needs at least two files to work:
+
+## An XML file
+Any [[plain text]] and [[markup]] between two lines of XML, saved with the extension `.xml`.
+
+<html show="code">
+&lt;?xml-stylesheet type="text/xsl" href="0.xsl"?&gt;&lt;x&gt;
+CONTENT
+&lt;/x&gt;
+</html>
+
+## The Skip file
+`0.xsl` The XSLT file that processes [[markup|page content]] into HTML.
+
+# Optional
+An option CSS file can style the pages beyond the browser's default styling.
+
+</x>
+<!-- Copyright Greg Abbott 2025-08-26 -->

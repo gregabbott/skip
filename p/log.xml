@@ -5,7 +5,7 @@ note: Newest at top
 date: 2025-08-27
 ---
 <!-- 
-Project: Markdown to HTML via XSLT
+Project: Plain text and markup (including markdown) to HTML via XSLT
 Copyright 2025 Greg Abbott 
 V1 2025_0826
 V 2025_0828
@@ -23,6 +23,9 @@ V 2025_0828
 -- Shows HTML as code when block has tag
 - Clarifies post navigation code to use terms 'newer' or 'older'
 -- VS. 'next/prev' which could mean 'in a list' or 'in time'
+- Splits main page: plain text, markup, parts (setup)
+- Adds HTML document title and header conditionally
+-- Requires presence of YAML name property with non blank value
 ```
 
 # 2025_0902
@@ -79,7 +82,7 @@ V 2025_0828
 ```
 
 ```details "2025_0827"
-- Marks up blockquote with named code block instead of markdown
+- Marks up blockquote with named code block instead of Markdown
 -- This approach works better when using XSLT as a parser
 -- Supports inner paragraphs and inline tokens
 - Joins touching text lines with ' ' to form one paragraph
@@ -98,7 +101,7 @@ V 2025_0828
 -- Lists
 -- Code blocks
 -- Block quotes
--- Links: Markdown and wikilink styles
+-- Links: Raw and mixed markup style (Markdown and wikilink)
 -- Images: Inline and block
 - Adds features
 -- Handles hash links to same and different pages
