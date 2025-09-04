@@ -36,7 +36,7 @@ doctype-system="about:legacy-compat"
 <div id="_nav_and_main">
 <nav id="site_nav">
 <ul>
-<li><a href="markup.xml">Home</a></li>
+<li><a href="skip.xml">Home</a></li>
 <li><a href="parts.xml">Parts</a></li>
 <li><a href="log.xml">Log</a></li>
 <li><a href="info.xml">Info</a></li>

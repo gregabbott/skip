@@ -9,9 +9,9 @@ Copyright 2025 Greg Abbott
 V1 2025-08-26
 V 2025-08-28
 -->
-Skip parses [[plain text]], mark up and Markdown to HTML with [[parts|XSLT]].
+This page covers the mix of markup conventions [[Skip]] uses to transform text to HTML. 
 
-This page covers the mix of markup conventions Skip uses to transform text.
+*View the source code of this page*
 
 ## YAML
 Pages can set and store metadata by starting with a YAML block.

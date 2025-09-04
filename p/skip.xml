@@ -1,0 +1,8 @@
+<?xml-stylesheet type="text/xsl" href="../0/0.xsl"?><x>
+---
+name: Skip
+date: 2025_0904
+---
+Skip parses [[plain text]], [[markup]] and Markdown to HTML with [[parts|XSLT]].
+</x>
+<!-- Copyright Greg Abbott 2025-08-26 -->

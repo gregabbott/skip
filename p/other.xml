@@ -13,6 +13,8 @@ No 'lead' content (anything before first markup heading)
 A markup heading
 ```
 
+This page also tests links on other pages pointing to the multi-word named section below.
+
 ## Section of Interest
 ```
 

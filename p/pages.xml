@@ -4,8 +4,6 @@ name: Pages
 date: 2025-09-02
 ---
 
-- An optional [helper tool](https://gregabbott.pages.dev/json-feed-and-site-map-maker) can make and update a pages XSLT file. This file adds two features to the site:
+- An optional [[parts#index|site index]] feature enables this page.
 
-- **Pages Page**: A page showing all pages with newest first. (*this page*)
-- **Page Navigation**. "Next" and "Previous" navigation per page.
 </pages><!-- special tag for this 'Pages' page -->

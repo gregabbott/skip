@@ -1,9 +1,12 @@
 <?xml-stylesheet type="text/xsl" href="../0/0.xsl"?><x>
+This page exists to test a few areas of the parser.
+
 - The markup for this page has:
--- No YAML block or name property.
---- This tests the fallback title.
--- No headers
---- This tests if the parser outputs the correct structure:
---- (It should not generate a 'lead' section, or a page map).
-- The multi word file name tests [[markup#links|link parsing]] on other pages.
+-- No YAML block or name property
+--- The page should lack a header
+--- The document title should have the site name only
+-- No section headings
+--- The page should lack a 'lead' section and navigation map
+- The page has a multi-word file name
+-- Links to it from other pages test [[markup#links|link parsing]]
 </x>

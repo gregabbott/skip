@@ -14,15 +14,15 @@ V 2025_0828
 
 # 2025_0903
 ```
-- Nests sections per heading in article section (FIXED).
-- Improves name to link conversion (for [[multi word links]])
+- Nests sections per heading in a page's article element.
+- Improves name-to-link conversion (for [[multi word links]])
 -- Avoids multiple dashes: `title - sub` -> `title-subtitle`
-- Handles relative links in markup (e.g. '../folder_up/i/1.png')
+- Handles relative links in markup (e.g. '../i/1.png')
 - Adds a custom HTML block
--- Renders HTML by default
+-- Renders HTML (and JS)
 -- Shows HTML as code when block has tag
-- Clarifies post navigation code to use terms 'newer' or 'older'
--- VS. 'next/prev' which could mean 'in a list' or 'in time'
+- Clarifies page navigation code with terms 'newer' or 'older'
+-- (vs. 'next/prev' which could mean 'in list' or 'in time')
 - Splits main page: plain text, markup, parts (setup)
 - Adds HTML document title and header conditionally
 -- Requires presence of YAML name property with non blank value

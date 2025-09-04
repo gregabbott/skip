@@ -5,10 +5,10 @@ date: 2025_0903
 ---
 
 # Needed
-Skip needs at least two files to work:
+Skip works with two or more files.
 
-## An XML file
-Any [[plain text]] and [[markup]] between two lines of XML, saved with the extension `.xml`.
+## A Page
+Any [[plain text]] and [[markup]] content between two lines of XML, saved with the extension `.xml`.
 
 <html show="code">
 &lt;?xml-stylesheet type="text/xsl" href="0.xsl"?&gt;&lt;x&gt;
@@ -20,7 +20,17 @@ CONTENT
 `0.xsl` The XSLT file that processes [[markup|page content]] into HTML.
 
 # Optional
-An option CSS file can style the pages beyond the browser's default styling.
+## CSS
+An optional CSS file can style the pages beyond the browser's default styling.
 
+## Index
+`pages.xsl` An XSLT file containing a list of the site's pages. This file adds two features to the site:
+
+- **Page Index**
+-- [[pages|A page linking to all pages from newest to oldest]]. 
+- **Page Navigation**
+-- Links per page to the next older page and next newer page.
+
+An optional [helper tool](https://gregabbott.pages.dev/json-feed-and-site-map-maker) can make and update this file.
 </x>
 <!-- Copyright Greg Abbott 2025-08-26 -->
