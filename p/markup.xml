@@ -63,9 +63,10 @@ This section sits between the page title and the page map.
 -- 3: Start of post
 
 ## Links
-### Regular
+- Raw links: https://example.com (any URL in text without markup)
+
+### Markdown style
 - External:
--- Raw link (URL without markup): https://example.com
 -- With link text [Example](https://example.com)
 -- Without link text [](https://example.com)
 --- Extracts domain from URL for link text.
@@ -84,7 +85,7 @@ This section sits between the page title and the page map.
 -- Without link text [](#Links)
 --- Both use the case given in the URL hash
 
-### Wikilinks
+### Wikilink style
 - Different page
 -- Without custom link text
 --- One word page name: [[Other]]
@@ -169,7 +170,7 @@ Via:
 ### Quotes
 
 ```blockquote
-Alternate block quote syntax to suit XSLT:
+Custom block quote syntax to suit XSLT:
 
 - **Start** a block quote with:
 -- newline, 3 backticks, the string `blockquote`, newline.
