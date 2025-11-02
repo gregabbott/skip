@@ -12,8 +12,13 @@ V 2025_0828
 -->
 - Since: 2025-08-26
 
-# 2025_0903
-```
+# 2025_1102
+- Refactors main XSL file to work in Firefox
+
+
+# Previous
+
+```details "2025_0903"
 - Nests sections per heading in a page's article element.
 - Improves name-to-link conversion (for [[multi word links]])
 -- Avoids multiple dashes: `title - sub` -> `title-subtitle`
@@ -28,8 +33,7 @@ V 2025_0828
 -- Requires presence of YAML name property with non blank value
 ```
 
-# 2025_0902
-```
+```details "2025_0902"
 - Uses separate feed maker helper tool to make pages list
 -- Adds "Pages" page (sorted new to old)
 -- Adds "previous page" "next page" navigation
@@ -38,14 +42,12 @@ V 2025_0828
 - Structures site into assets, images, pages
 ```
 
-# 2025_0831
-```
+```details "2025_0831"
 - CSS
 -- Highlights Map based on scroll position (Chrome 140)
 ```
 
-# 2025_0830
-```
+```details "2025_0830"
 - XSLT
 -- Adds "details" block type
 -- Unifies triple backtick blocks logic (vs. code for each type)
@@ -53,7 +55,6 @@ V 2025_0828
 -- Styles details summary content block
 ```
 
-# Previous
 ```details "2025_0829"
 - Refactors XSLT and reduces weight from 110KB to 66KB
 - Improves default styling

@@ -19,7 +19,7 @@ u="../p/plain-text"/>
 <p
 d="2025-09-04"
 n="Skip"
-u="../p/skip"/>
+u="../p/index"/>
 <p
 d="2025-09-01"
 n="Pages"
