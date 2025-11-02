@@ -20,7 +20,7 @@ V 2025_0828
 
 ```details "2025_0903"
 - Nests sections per heading in a page's article element.
-- Improves name-to-link conversion (for [[multi word links]])
+- Improves name-to-link conversion (for multi-word links)
 -- Avoids multiple dashes: `title - sub` -> `title-subtitle`
 - Handles relative links in markup (e.g. '../i/1.png')
 - Adds a custom HTML block
