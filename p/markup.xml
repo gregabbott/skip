@@ -216,11 +216,7 @@ Inline JavaScript runs if included in the above block type.
 
 ## Horizontal Rules
 
-3 dashes style:
-
----
-
-3 asterisk style:
+3 asterisks:
 
 ***
 
