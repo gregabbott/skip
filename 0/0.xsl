@@ -1,14 +1,16 @@
 <xsl:stylesheet version="1.0" 
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 xmlns:exsl="http://exslt.org/common"
->  
-<!-- file must exist: --><xsl:import href="pages.xsl"/>
+extension-element-prefixes="exsl"
+>
+<xsl:import href="pages.xsl"/>
 <xsl:output
 method="html"
 indent="yes"
 encoding="UTF-8"
 doctype-system="about:legacy-compat"
 />
+
 <!-- Main -->
 <xsl:template match="/">
 <xsl:variable name="page-title">
@@ -56,17 +58,19 @@ doctype-system="about:legacy-compat"
   </xsl:otherwise>
 </xsl:choose>
 </header>
-<!-- Extract content but handle HTML elements -->
+
 <xsl:variable name="content">
 <xsl:call-template name="serialize-mixed-content">
 <xsl:with-param name="nodes" select="/*/node()"/>
 </xsl:call-template>
 </xsl:variable>
+
 <xsl:variable name="has-headers">
 <xsl:call-template name="check-for-headers">
 <xsl:with-param name="text" select="$content" />
 </xsl:call-template>
 </xsl:variable>
+
 <!-- Lead content -->
 <xsl:if test="$has-headers = 'true'">
 <xsl:variable name="lead-content">
@@ -83,6 +87,7 @@ doctype-system="about:legacy-compat"
 </section>
 </xsl:if>
 </xsl:if>
+
 <!-- TOC -->
 <xsl:if test="$has-headers = 'true'">
 <details id="map_holder">
@@ -96,6 +101,7 @@ doctype-system="about:legacy-compat"
 </div>
 </details>
 </xsl:if>
+
 <!-- Main content -->
 <article id="post" class="no_outline" tabindex="-1" accesskey="3">
 <xsl:choose>
@@ -122,11 +128,11 @@ doctype-system="about:legacy-compat"
 </xsl:if>
 </article>
 </main>
-<!-- Call prev-next -->
+
 <xsl:call-template name="prev-next-nav">
 <xsl:with-param name="current-page-name" select="$page-title"/>
 </xsl:call-template>
-</div><!--end _nav_and_main-->
+</div>
 <footer>
 <span
 title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) sheet. By and copyright Greg Abbott 2025. First Version: 2025-08-26. Version: 2025-09-03">
@@ -134,28 +140,25 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 <a href="https://gregabbott.pages.dev/">Greg Abbott</a>.
 </span>
 <a id="to_top" href="#top">Top</a>
-<li><a href="pages.xml">Pages</a></li>
+<ul><li><a href="pages.xml">Pages</a></li></ul>
 </footer>
 </body>
 </html>
 </xsl:template>
+
 <!-- Previous and Next Page Nav -->
 <xsl:template name="prev-next-nav">
 <xsl:param name="current-page-name"/>
 <xsl:variable name="page-list" select="exsl:node-set($ps)/p"/>
 <xsl:variable name="matching-page" select="$page-list[@n = $current-page-name]"/>
-<!-- Only proceed if current page found in page list -->
 <xsl:if test="$matching-page">
 <xsl:variable name="current-position" select="count($matching-page/preceding-sibling::p) + 1"/>
 <xsl:variable name="total-pages" select="count($page-list)"/>
-<!-- Check for newer or older posts (relative to current page) -->
 <xsl:variable name="has-newer" select="$current-position > 1"/>
 <xsl:variable name="has-older" select="$current-position &lt; $total-pages"/>
-<!-- Only create nav element if it holds >0 links -->
 <xsl:if test="$has-newer or $has-older">
 <nav class="older_newer">
 <hr/>
-<!-- Older post (lower/later in XSL list) -->
 <xsl:choose>
 <xsl:when test="$has-older">
 <xsl:variable name="older-page" select="$page-list[$current-position + 1]"/>
@@ -175,7 +178,6 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </div>
 </xsl:otherwise>
 </xsl:choose>
-<!-- Newer post (higher/earlier in XSL list) -->
 <xsl:choose>
 <xsl:when test="$has-newer">
 <xsl:variable name="newer-page" select="$page-list[$current-position - 1]"/>
@@ -199,7 +201,7 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </xsl:if>
 </xsl:if>
 </xsl:template>
-<!--  PAGE LIST {p:page item,u:url,n:name}-->
+
 <xsl:template name="simple-nav-list">
 <ul>
 <xsl:for-each select="exsl:node-set($ps)/p">
@@ -213,234 +215,30 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </xsl:for-each>
 </ul>
 </xsl:template>
-<!-- Unified content processing entry point -->
+
+<!-- ==================== CORE PROCESSING ==================== -->
+
 <xsl:template name="process-content">
 <xsl:param name="text"/>
 <xsl:param name="enable-sections" select="false()"/>
-<xsl:choose>
-<xsl:when test="$enable-sections">
-<!-- Process with sections by splitting at headers -->
-<xsl:call-template name="process-content-with-sections">
-<xsl:with-param name="text" select="$text"/>
-</xsl:call-template>
-</xsl:when>
-<xsl:otherwise>
-<!-- Process without sections -->
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$text"/>
-<xsl:with-param name="in-triple-backticks-block" select="false()"/>
-<xsl:with-param name="block-type" select="''"/>
-<xsl:with-param name="in-list" select="false()"/>
-<xsl:with-param name="list-level" select="0"/>
-<xsl:with-param name="list-type" select="'ul'"/>
-<xsl:with-param name="paragraph-accumulator" select="''"/>
+<xsl:with-param name="in-code-block" select="false()"/>
+<xsl:with-param name="in-blockquote" select="false()"/>
+<xsl:with-param name="in-details" select="false()"/>
+<xsl:with-param name="paragraph-acc" select="''"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
 </xsl:call-template>
-</xsl:otherwise>
-</xsl:choose>
 </xsl:template>
-<!-- Process content with sections -->
-<xsl:template name="process-content-with-sections">
-<xsl:param name="text"/>
-<xsl:param name="current-level" select="0"/>
-<xsl:if test="string-length($text) > 0">
-<!-- Find next header -->
-<xsl:variable name="next-header-info">
-<xsl:call-template name="find-next-header">
-<xsl:with-param name="text" select="$text"/>
-</xsl:call-template>
-</xsl:variable>
-<xsl:variable name="header-pos" select="exsl:node-set($next-header-info)/pos"/>
-<xsl:variable name="header-level" select="exsl:node-set($next-header-info)/level"/>
-<xsl:variable name="header-line" select="exsl:node-set($next-header-info)/line"/>
-<xsl:choose>
-<xsl:when test="$header-pos > 0">
-<!-- Process content before header -->
-<xsl:variable name="before-header" select="substring($text, 1, $header-pos - 1)"/>
-<xsl:if test="normalize-space($before-header) != ''">
-<xsl:call-template name="process-lines">
-<xsl:with-param name="remaining" select="$before-header"/>
-<xsl:with-param name="in-triple-backticks-block" select="false()"/>
-<xsl:with-param name="block-type" select="''"/>
-<xsl:with-param name="in-list" select="false()"/>
-<xsl:with-param name="list-level" select="0"/>
-<xsl:with-param name="list-type" select="'ul'"/>
-<xsl:with-param name="paragraph-accumulator" select="''"/>
-</xsl:call-template>
-</xsl:if>
-<!-- Get content for this section -->
-<xsl:variable name="after-header-line">
-<xsl:choose>
-<xsl:when test="contains(substring($text, $header-pos), '&#10;')">
-<xsl:value-of select="substring-after(substring($text, $header-pos), '&#10;')"/>
-</xsl:when>
-<xsl:otherwise>
-<xsl:value-of select="''"/>
-</xsl:otherwise>
-</xsl:choose>
-</xsl:variable>
-<!-- Find the next header at same or higher level to determine section end -->
-<xsl:variable name="section-content">
-<xsl:call-template name="extract-section-content">
-<xsl:with-param name="text" select="$after-header-line"/>
-<xsl:with-param name="current-level" select="$header-level"/>
-</xsl:call-template>
-</xsl:variable>
-<!-- Output section with header -->
-<section>
-<div>
-<!-- Process the header -->
-<xsl:call-template name="process-heading">
-<xsl:with-param name="line" select="$header-line"/>
-<xsl:with-param name="shift-level" select="true()"/>
-</xsl:call-template>
-<!-- Process section content (which may have subsections) -->
-<xsl:call-template name="process-content-with-sections">
-<xsl:with-param name="text" select="$section-content"/>
-<xsl:with-param name="current-level" select="$header-level"/>
-</xsl:call-template>
-</div>
-</section>
-<!-- Continue with remaining content after this section -->
-<xsl:variable name="remaining-after-section" select="substring($after-header-line, string-length($section-content) + 1)"/>
-<xsl:call-template name="process-content-with-sections">
-<xsl:with-param name="text" select="$remaining-after-section"/>
-<xsl:with-param name="current-level" select="$current-level"/>
-</xsl:call-template>
-</xsl:when>
-<xsl:otherwise>
-<!-- No more headers, process remaining content -->
-<xsl:call-template name="process-lines">
-<xsl:with-param name="remaining" select="$text"/>
-<xsl:with-param name="in-triple-backticks-block" select="false()"/>
-<xsl:with-param name="block-type" select="''"/>
-<xsl:with-param name="in-list" select="false()"/>
-<xsl:with-param name="list-level" select="0"/>
-<xsl:with-param name="list-type" select="'ul'"/>
-<xsl:with-param name="paragraph-accumulator" select="''"/>
-</xsl:call-template>
-</xsl:otherwise>
-</xsl:choose>
-</xsl:if>
-</xsl:template>
-<!-- Find next header in text -->
-<xsl:template name="find-next-header">
-<xsl:param name="text"/>
-<xsl:param name="pos" select="1"/>
-<xsl:param name="in-code" select="false()"/>
-<xsl:choose>
-<xsl:when test="string-length($text) = 0">
-<pos>0</pos>
-<level>0</level>
-<line></line>
-</xsl:when>
-<xsl:when test="contains($text, '&#10;')">
-<xsl:variable name="line" select="substring-before($text, '&#10;')"/>
-<xsl:variable name="rest" select="substring-after($text, '&#10;')"/>
-<xsl:choose>
-<!-- Toggle code block state -->
-<xsl:when test="starts-with($line, '```')">
-<xsl:call-template name="find-next-header">
-<xsl:with-param name="text" select="$rest"/>
-<xsl:with-param name="pos" select="$pos + string-length($line) + 1"/>
-<xsl:with-param name="in-code" select="not($in-code)"/>
-</xsl:call-template>
-</xsl:when>
-<!-- Found header outside code -->
-<xsl:when test="starts-with($line, '#') and not($in-code)">
-<pos><xsl:value-of select="$pos"/></pos>
-<level>
-<xsl:call-template name="count-heading-level">
-<xsl:with-param name="line" select="$line"/>
-</xsl:call-template>
-</level>
-<line><xsl:value-of select="$line"/></line>
-</xsl:when>
-<xsl:otherwise>
-<xsl:call-template name="find-next-header">
-<xsl:with-param name="text" select="$rest"/>
-<xsl:with-param name="pos" select="$pos + string-length($line) + 1"/>
-<xsl:with-param name="in-code" select="$in-code"/>
-</xsl:call-template>
-</xsl:otherwise>
-</xsl:choose>
-</xsl:when>
-<xsl:otherwise>
-<pos>0</pos>
-<level>0</level>
-<line></line>
-</xsl:otherwise>
-</xsl:choose>
-</xsl:template>
-<!-- Extract content for a section (until next header at same or higher level) -->
-<xsl:template name="extract-section-content">
-<xsl:param name="text"/>
-<xsl:param name="current-level"/>
-<xsl:param name="accumulated" select="''"/>
-<xsl:param name="in-code" select="false()"/>
-<xsl:if test="string-length($text) > 0">
-<xsl:choose>
-<xsl:when test="contains($text, '&#10;')">
-<xsl:variable name="line" select="substring-before($text, '&#10;')"/>
-<xsl:variable name="rest" select="substring-after($text, '&#10;')"/>
-<xsl:choose>
-<!-- Toggle code block state -->
-<xsl:when test="starts-with($line, '```')">
-<xsl:call-template name="extract-section-content">
-<xsl:with-param name="text" select="$rest"/>
-<xsl:with-param name="current-level" select="$current-level"/>
-<xsl:with-param name="accumulated" select="concat($accumulated, $line, '&#10;')"/>
-<xsl:with-param name="in-code" select="not($in-code)"/>
-</xsl:call-template>
-</xsl:when>
-<!-- Check for header at same or higher level -->
-<xsl:when test="starts-with($line, '#') and not($in-code)">
-<xsl:variable name="header-level">
-<xsl:call-template name="count-heading-level">
-<xsl:with-param name="line" select="$line"/>
-</xsl:call-template>
-</xsl:variable>
-<xsl:choose>
-<xsl:when test="$header-level &lt;= $current-level">
-<!-- End of section -->
-<xsl:value-of select="$accumulated"/>
-</xsl:when>
-<xsl:otherwise>
-<!-- Subsection, include it -->
-<xsl:call-template name="extract-section-content">
-<xsl:with-param name="text" select="$rest"/>
-<xsl:with-param name="current-level" select="$current-level"/>
-<xsl:with-param name="accumulated" select="concat($accumulated, $line, '&#10;')"/>
-<xsl:with-param name="in-code" select="$in-code"/>
-</xsl:call-template>
-</xsl:otherwise>
-</xsl:choose>
-</xsl:when>
-<xsl:otherwise>
-<xsl:call-template name="extract-section-content">
-<xsl:with-param name="text" select="$rest"/>
-<xsl:with-param name="current-level" select="$current-level"/>
-<xsl:with-param name="accumulated" select="concat($accumulated, $line, '&#10;')"/>
-<xsl:with-param name="in-code" select="$in-code"/>
-</xsl:call-template>
-</xsl:otherwise>
-</xsl:choose>
-</xsl:when>
-<xsl:otherwise>
-<!-- Last line -->
-<xsl:value-of select="concat($accumulated, $text)"/>
-</xsl:otherwise>
-</xsl:choose>
-</xsl:if>
-</xsl:template>
-<!-- Main processing template - REFACTORED for Firefox -->
+
 <xsl:template name="process-lines">
 <xsl:param name="remaining"/>
-<xsl:param name="in-triple-backticks-block"/>
-<xsl:param name="block-type"/>
-<xsl:param name="in-list"/>
-<xsl:param name="list-level"/>
-<xsl:param name="list-type"/>
-<xsl:param name="paragraph-accumulator"/>
+<xsl:param name="in-code-block"/>
+<xsl:param name="in-blockquote"/>
+<xsl:param name="in-details"/>
+<xsl:param name="paragraph-acc"/>
+<xsl:param name="enable-sections"/>
+
 <xsl:if test="string-length($remaining) > 0">
 <xsl:variable name="line">
 <xsl:choose>
@@ -452,333 +250,302 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </xsl:otherwise>
 </xsl:choose>
 </xsl:variable>
+
 <xsl:variable name="rest">
 <xsl:if test="contains($remaining, '&#10;')">
 <xsl:value-of select="substring-after($remaining, '&#10;')"/>
 </xsl:if>
 </xsl:variable>
+
 <xsl:choose>
-<!-- Triple backticks handling -->
+<!-- Handle triple backticks -->
 <xsl:when test="starts-with($line, '```')">
-<!-- Flush paragraph and close lists if not in code block -->
-<xsl:if test="$block-type != 'code'">
+<xsl:choose>
+<!-- Starting code block -->
+<xsl:when test="not($in-code-block) and not($in-blockquote) and not($in-details) and $line = '```'">
 <xsl:call-template name="flush-paragraph">
-<xsl:with-param name="paragraph" select="$paragraph-accumulator"/>
+<xsl:with-param name="paragraph" select="$paragraph-acc"/>
 </xsl:call-template>
-</xsl:if>
-<xsl:choose>
-<!-- Starting a new block -->
-<xsl:when test="$in-triple-backticks-block = false()">
-<!-- Determine block type -->
-<xsl:variable name="new-block-type">
-<xsl:choose>
-<xsl:when test="starts-with($line, '```blockquote')">blockquote</xsl:when>
-<xsl:when test="starts-with($line, '```details')">details</xsl:when>
-<xsl:when test="starts-with($line, '```table')">table</xsl:when>
-<xsl:otherwise>code</xsl:otherwise>
-</xsl:choose>
-</xsl:variable>
-<!-- Collect content until closing ``` -->
-<xsl:variable name="block-content">
-<xsl:call-template name="collect-until-marker">
+<xsl:variable name="code-content">
+<xsl:call-template name="extract-until-marker">
 <xsl:with-param name="text" select="$rest"/>
 <xsl:with-param name="marker" select="'```'"/>
 </xsl:call-template>
 </xsl:variable>
-<xsl:variable name="remaining-after-block">
-<xsl:call-template name="skip-until-after-marker">
+<pre><code><xsl:value-of select="$code-content"/></code></pre>
+<xsl:call-template name="process-lines">
+<xsl:with-param name="remaining">
+<xsl:call-template name="skip-past-marker">
+<xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="marker" select="'```'"/>
+</xsl:call-template>
+</xsl:with-param>
+<xsl:with-param name="in-code-block" select="false()"/>
+<xsl:with-param name="in-blockquote" select="false()"/>
+<xsl:with-param name="in-details" select="false()"/>
+<xsl:with-param name="paragraph-acc" select="''"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
+</xsl:call-template>
+</xsl:when>
+
+<!-- Starting blockquote -->
+<xsl:when test="not($in-code-block) and not($in-blockquote) and not($in-details) and starts-with($line, '```blockquote')">
+<xsl:call-template name="flush-paragraph">
+<xsl:with-param name="paragraph" select="$paragraph-acc"/>
+</xsl:call-template>
+<xsl:variable name="bq-content">
+<xsl:call-template name="extract-until-marker">
 <xsl:with-param name="text" select="$rest"/>
 <xsl:with-param name="marker" select="'```'"/>
 </xsl:call-template>
 </xsl:variable>
-<!-- Output wrapped content based on type -->
-<xsl:choose>
-<xsl:when test="$new-block-type = 'table'">
-<table border="1" cellpadding="0" cellspacing="0">
-<xsl:call-template name="parse-table-content">
-<xsl:with-param name="content" select="$block-content"/>
-</xsl:call-template>
-</table>
-</xsl:when>
-<xsl:when test="$new-block-type = 'code'">
-<pre><code><xsl:value-of select="$block-content"/></code></pre>
-</xsl:when>
-<xsl:when test="$new-block-type = 'blockquote'">
 <blockquote>
 <xsl:call-template name="process-content">
-<xsl:with-param name="text" select="$block-content"/>
+<xsl:with-param name="text" select="$bq-content"/>
 <xsl:with-param name="enable-sections" select="false()"/>
 </xsl:call-template>
 </blockquote>
+<xsl:call-template name="process-lines">
+<xsl:with-param name="remaining">
+<xsl:call-template name="skip-past-marker">
+<xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="marker" select="'```'"/>
+</xsl:call-template>
+</xsl:with-param>
+<xsl:with-param name="in-code-block" select="false()"/>
+<xsl:with-param name="in-blockquote" select="false()"/>
+<xsl:with-param name="in-details" select="false()"/>
+<xsl:with-param name="paragraph-acc" select="''"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
+</xsl:call-template>
 </xsl:when>
-<xsl:when test="$new-block-type = 'details'">
-<xsl:variable name="after-details" select="substring-after($line, '```details')"/>
-<xsl:variable name="trimmed-after" select="normalize-space($after-details)"/>
+
+<!-- Starting details -->
+<xsl:when test="not($in-code-block) and not($in-blockquote) and not($in-details) and starts-with($line, '```details')">
+<xsl:call-template name="flush-paragraph">
+<xsl:with-param name="paragraph" select="$paragraph-acc"/>
+</xsl:call-template>
 <xsl:variable name="summary-text">
+<xsl:variable name="after-details" select="normalize-space(substring-after($line, '```details'))"/>
 <xsl:choose>
-<xsl:when test="starts-with($trimmed-after, '&quot;') and contains(substring-after($trimmed-after, '&quot;'), '&quot;')">
-<xsl:value-of select="substring-before(substring-after($trimmed-after, '&quot;'), '&quot;')"/>
+<xsl:when test="starts-with($after-details, '&quot;') and contains(substring-after($after-details, '&quot;'), '&quot;')">
+<xsl:value-of select="substring-before(substring-after($after-details, '&quot;'), '&quot;')"/>
 </xsl:when>
 <xsl:otherwise>Details</xsl:otherwise>
 </xsl:choose>
+</xsl:variable>
+<xsl:variable name="details-content">
+<xsl:call-template name="extract-until-marker">
+<xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="marker" select="'```'"/>
+</xsl:call-template>
 </xsl:variable>
 <details>
 <summary><xsl:value-of select="$summary-text"/></summary>
 <div>
 <xsl:call-template name="process-content">
-<xsl:with-param name="text" select="$block-content"/>
+<xsl:with-param name="text" select="$details-content"/>
 <xsl:with-param name="enable-sections" select="false()"/>
 </xsl:call-template>
 </div>
 </details>
-</xsl:when>
-</xsl:choose>
-<!-- Continue with remaining content -->
 <xsl:call-template name="process-lines">
-<xsl:with-param name="remaining" select="$remaining-after-block"/>
-<xsl:with-param name="in-triple-backticks-block" select="false()"/>
-<xsl:with-param name="block-type" select="''"/>
-<xsl:with-param name="in-list" select="false()"/>
-<xsl:with-param name="list-level" select="0"/>
-<xsl:with-param name="list-type" select="'ul'"/>
-<xsl:with-param name="paragraph-accumulator" select="''"/>
+<xsl:with-param name="remaining">
+<xsl:call-template name="skip-past-marker">
+<xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="marker" select="'```'"/>
+</xsl:call-template>
+</xsl:with-param>
+<xsl:with-param name="in-code-block" select="false()"/>
+<xsl:with-param name="in-blockquote" select="false()"/>
+<xsl:with-param name="in-details" select="false()"/>
+<xsl:with-param name="paragraph-acc" select="''"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
 </xsl:call-template>
 </xsl:when>
-<!-- Should not reach here if block processing works correctly -->
-<xsl:otherwise>
-<xsl:call-template name="process-lines">
-<xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-triple-backticks-block" select="false()"/>
-<xsl:with-param name="block-type" select="''"/>
-<xsl:with-param name="in-list" select="false()"/>
-<xsl:with-param name="list-level" select="0"/>
-<xsl:with-param name="list-type" select="'ul'"/>
-<xsl:with-param name="paragraph-accumulator" select="''"/>
+
+<!-- Starting table -->
+<xsl:when test="not($in-code-block) and not($in-blockquote) and not($in-details) and starts-with($line, '```table')">
+<xsl:call-template name="flush-paragraph">
+<xsl:with-param name="paragraph" select="$paragraph-acc"/>
 </xsl:call-template>
-</xsl:otherwise>
+<xsl:variable name="table-content">
+<xsl:call-template name="extract-until-marker">
+<xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="marker" select="'```'"/>
+</xsl:call-template>
+</xsl:variable>
+<table border="1" cellpadding="0" cellspacing="0">
+<xsl:call-template name="parse-table-content">
+<xsl:with-param name="content" select="$table-content"/>
+</xsl:call-template>
+</table>
+<xsl:call-template name="process-lines">
+<xsl:with-param name="remaining">
+<xsl:call-template name="skip-past-marker">
+<xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="marker" select="'```'"/>
+</xsl:call-template>
+</xsl:with-param>
+<xsl:with-param name="in-code-block" select="false()"/>
+<xsl:with-param name="in-blockquote" select="false()"/>
+<xsl:with-param name="in-details" select="false()"/>
+<xsl:with-param name="paragraph-acc" select="''"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
+</xsl:call-template>
+</xsl:when>
 </xsl:choose>
 </xsl:when>
+
 <!-- Empty line -->
 <xsl:when test="normalize-space($line) = ''">
 <xsl:call-template name="flush-paragraph">
-<xsl:with-param name="paragraph" select="$paragraph-accumulator"/>
+<xsl:with-param name="paragraph" select="$paragraph-acc"/>
 </xsl:call-template>
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
-<xsl:with-param name="block-type" select="$block-type"/>
-<xsl:with-param name="in-list" select="false()"/>
-<xsl:with-param name="list-level" select="0"/>
-<xsl:with-param name="list-type" select="'ul'"/>
-<xsl:with-param name="paragraph-accumulator" select="''"/>
+<xsl:with-param name="in-code-block" select="$in-code-block"/>
+<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
+<xsl:with-param name="in-details" select="$in-details"/>
+<xsl:with-param name="paragraph-acc" select="''"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
 </xsl:call-template>
 </xsl:when>
-<!-- Headers - SIMPLIFIED (sections handled elsewhere) -->
-<xsl:when test="starts-with($line, '#') and $in-triple-backticks-block = false()">
+
+<!-- Headers -->
+<xsl:when test="starts-with($line, '#')">
 <xsl:call-template name="flush-paragraph">
-<xsl:with-param name="paragraph" select="$paragraph-accumulator"/>
+<xsl:with-param name="paragraph" select="$paragraph-acc"/>
 </xsl:call-template>
-<!-- Process heading -->
+<xsl:choose>
+<xsl:when test="$enable-sections">
+<xsl:call-template name="process-with-sections">
+<xsl:with-param name="remaining" select="$remaining"/>
+</xsl:call-template>
+</xsl:when>
+<xsl:otherwise>
 <xsl:call-template name="process-heading">
 <xsl:with-param name="line" select="$line"/>
 <xsl:with-param name="shift-level" select="false()"/>
 </xsl:call-template>
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-triple-backticks-block" select="false()"/>
-<xsl:with-param name="block-type" select="''"/>
-<xsl:with-param name="in-list" select="false()"/>
-<xsl:with-param name="list-level" select="0"/>
-<xsl:with-param name="list-type" select="'ul'"/>
-<xsl:with-param name="paragraph-accumulator" select="''"/>
+<xsl:with-param name="in-code-block" select="false()"/>
+<xsl:with-param name="in-blockquote" select="false()"/>
+<xsl:with-param name="in-details" select="false()"/>
+<xsl:with-param name="paragraph-acc" select="''"/>
+<xsl:with-param name="enable-sections" select="false()"/>
 </xsl:call-template>
+</xsl:otherwise>
+</xsl:choose>
 </xsl:when>
-<!-- Task lists -->
+
+<!-- Task list items -->
 <xsl:when test="starts-with($line, '- [ ]') or starts-with($line, '- [x]') or starts-with($line, '- [X]')">
 <xsl:call-template name="flush-paragraph">
-<xsl:with-param name="paragraph" select="$paragraph-accumulator"/>
+<xsl:with-param name="paragraph" select="$paragraph-acc"/>
 </xsl:call-template>
-<xsl:variable name="current-level" select="1"/>
-<!-- Collect all consecutive task list items -->
-<xsl:variable name="list-data">
-<xsl:call-template name="collect-list-items">
-<xsl:with-param name="remaining" select="concat($line, '&#10;', $rest)"/>
-<xsl:with-param name="list-type" select="'task'"/>
-</xsl:call-template>
-</xsl:variable>
-<xsl:variable name="list-items" select="exsl:node-set($list-data)/items"/>
-<xsl:variable name="after-list" select="exsl:node-set($list-data)/after"/>
-<!-- Output list with all items -->
-<ul>
-<xsl:for-each select="$list-items/item">
-<li class="task-list-item">
-<input type="checkbox" name="_todo" disabled="disabled">
-<xsl:if test="@checked = 'true'">
-<xsl:attribute name="checked">checked</xsl:attribute>
-</xsl:if>
-</input>
-<xsl:call-template name="process-inline">
-<xsl:with-param name="text" select="."/>
-</xsl:call-template>
-</li>
-</xsl:for-each>
-</ul>
-<xsl:call-template name="process-lines">
-<xsl:with-param name="remaining" select="$after-list"/>
-<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
-<xsl:with-param name="block-type" select="$block-type"/>
-<xsl:with-param name="in-list" select="false()"/>
-<xsl:with-param name="list-level" select="0"/>
-<xsl:with-param name="list-type" select="'ul'"/>
-<xsl:with-param name="paragraph-accumulator" select="''"/>
+<xsl:call-template name="process-list-block">
+<xsl:with-param name="remaining" select="$remaining"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
 </xsl:call-template>
 </xsl:when>
-<!-- Ordered list items -->
+
+<!-- Ordered lists -->
 <xsl:when test="substring($line, 1, 1) &gt;= '0' and substring($line, 1, 1) &lt;= '9' and contains(substring($line, 1, 5), '. ')">
 <xsl:call-template name="flush-paragraph">
-<xsl:with-param name="paragraph" select="$paragraph-accumulator"/>
+<xsl:with-param name="paragraph" select="$paragraph-acc"/>
 </xsl:call-template>
-<!-- Collect all consecutive ordered list items -->
-<xsl:variable name="list-data">
-<xsl:call-template name="collect-list-items">
-<xsl:with-param name="remaining" select="concat($line, '&#10;', $rest)"/>
-<xsl:with-param name="list-type" select="'ol'"/>
-</xsl:call-template>
-</xsl:variable>
-<xsl:variable name="list-items" select="exsl:node-set($list-data)/items"/>
-<xsl:variable name="after-list" select="exsl:node-set($list-data)/after"/>
-<!-- Output list with all items -->
-<ol>
-<xsl:for-each select="$list-items/item">
-<li>
-<xsl:call-template name="process-inline">
-<xsl:with-param name="text" select="."/>
-</xsl:call-template>
-</li>
-</xsl:for-each>
-</ol>
-<xsl:call-template name="process-lines">
-<xsl:with-param name="remaining" select="$after-list"/>
-<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
-<xsl:with-param name="block-type" select="$block-type"/>
-<xsl:with-param name="in-list" select="false()"/>
-<xsl:with-param name="list-level" select="0"/>
-<xsl:with-param name="list-type" select="'ol'"/>
-<xsl:with-param name="paragraph-accumulator" select="''"/>
+<xsl:call-template name="process-list-block">
+<xsl:with-param name="remaining" select="$remaining"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
 </xsl:call-template>
 </xsl:when>
-<!-- Multi-level unordered list handling -->
-<xsl:when test="starts-with($line, '-') and substring($line, string-length(substring-before(concat($line, ' '), ' ')) + 1, 1) = ' '">
+
+<!-- Unordered lists -->
+<xsl:when test="starts-with($line, '- ') or starts-with($line, '--')">
 <xsl:call-template name="flush-paragraph">
-<xsl:with-param name="paragraph" select="$paragraph-accumulator"/>
+<xsl:with-param name="paragraph" select="$paragraph-acc"/>
 </xsl:call-template>
-<!-- Collect all consecutive unordered list items -->
-<xsl:variable name="list-data">
-<xsl:call-template name="collect-list-items">
-<xsl:with-param name="remaining" select="concat($line, '&#10;', $rest)"/>
-<xsl:with-param name="list-type" select="'ul'"/>
-</xsl:call-template>
-</xsl:variable>
-<xsl:variable name="list-items" select="exsl:node-set($list-data)/items"/>
-<xsl:variable name="after-list" select="exsl:node-set($list-data)/after"/>
-<!-- Output list with all items -->
-<ul>
-<xsl:for-each select="$list-items/item">
-<li>
-<xsl:call-template name="process-inline">
-<xsl:with-param name="text" select="."/>
-</xsl:call-template>
-</li>
-</xsl:for-each>
-</ul>
-<xsl:call-template name="process-lines">
-<xsl:with-param name="remaining" select="$after-list"/>
-<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
-<xsl:with-param name="block-type" select="$block-type"/>
-<xsl:with-param name="in-list" select="false()"/>
-<xsl:with-param name="list-level" select="0"/>
-<xsl:with-param name="list-type" select="'ul'"/>
-<xsl:with-param name="paragraph-accumulator" select="''"/>
+<xsl:call-template name="process-list-block">
+<xsl:with-param name="remaining" select="$remaining"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
 </xsl:call-template>
 </xsl:when>
+
 <!-- Horizontal rule -->
 <xsl:when test="$line = '---' or $line = '***' or $line = '___'">
+<xsl:call-template name="flush-paragraph">
+<xsl:with-param name="paragraph" select="$paragraph-acc"/>
+</xsl:call-template>
 <hr/>
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
-<xsl:with-param name="block-type" select="$block-type"/>
-<xsl:with-param name="in-list" select="false()"/>
-<xsl:with-param name="list-level" select="0"/>
-<xsl:with-param name="list-type" select="'ul'"/>
-<xsl:with-param name="paragraph-accumulator" select="''"/>
+<xsl:with-param name="in-code-block" select="$in-code-block"/>
+<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
+<xsl:with-param name="in-details" select="$in-details"/>
+<xsl:with-param name="paragraph-acc" select="''"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
 </xsl:call-template>
 </xsl:when>
+
 <!-- Image-only line -->
 <xsl:when test="starts-with(normalize-space($line), '![') and substring(normalize-space($line), string-length(normalize-space($line))) = ')' and contains($line, '](')">
 <xsl:call-template name="flush-paragraph">
-<xsl:with-param name="paragraph" select="$paragraph-accumulator"/>
+<xsl:with-param name="paragraph" select="$paragraph-acc"/>
 </xsl:call-template>
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="normalize-space($line)"/>
 </xsl:call-template>
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
-<xsl:with-param name="block-type" select="$block-type"/>
-<xsl:with-param name="in-list" select="false()"/>
-<xsl:with-param name="list-level" select="0"/>
-<xsl:with-param name="list-type" select="'ul'"/>
-<xsl:with-param name="paragraph-accumulator" select="''"/>
+<xsl:with-param name="in-code-block" select="$in-code-block"/>
+<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
+<xsl:with-param name="in-details" select="$in-details"/>
+<xsl:with-param name="paragraph-acc" select="''"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
 </xsl:call-template>
 </xsl:when>
-<!-- Regular content line -->
+
+<!-- Regular content -->
 <xsl:otherwise>
-<xsl:variable name="new-accumulator">
+<xsl:variable name="new-acc">
 <xsl:choose>
-<xsl:when test="normalize-space($paragraph-accumulator) = ''">
+<xsl:when test="normalize-space($paragraph-acc) = ''">
 <xsl:value-of select="normalize-space($line)"/>
 </xsl:when>
 <xsl:otherwise>
-<xsl:value-of select="concat($paragraph-accumulator, ' ', normalize-space($line))"/>
+<xsl:value-of select="concat($paragraph-acc, ' ', normalize-space($line))"/>
 </xsl:otherwise>
 </xsl:choose>
 </xsl:variable>
 <xsl:call-template name="process-lines">
 <xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
-<xsl:with-param name="block-type" select="$block-type"/>
-<xsl:with-param name="in-list" select="$in-list"/>
-<xsl:with-param name="list-level" select="$list-level"/>
-<xsl:with-param name="list-type" select="$list-type"/>
-<xsl:with-param name="paragraph-accumulator" select="$new-accumulator"/>
+<xsl:with-param name="in-code-block" select="$in-code-block"/>
+<xsl:with-param name="in-blockquote" select="$in-blockquote"/>
+<xsl:with-param name="in-details" select="$in-details"/>
+<xsl:with-param name="paragraph-acc" select="$new-acc"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
 </xsl:call-template>
 </xsl:otherwise>
 </xsl:choose>
 </xsl:if>
-<!-- End of content cleanup -->
+
+<!-- End of content -->
 <xsl:if test="string-length($remaining) = 0">
 <xsl:call-template name="flush-paragraph">
-<xsl:with-param name="paragraph" select="$paragraph-accumulator"/>
+<xsl:with-param name="paragraph" select="$paragraph-acc"/>
 </xsl:call-template>
 </xsl:if>
 </xsl:template>
-<!-- NEW: Collect list items helper -->
-<xsl:template name="collect-list-items">
+
+<!-- ==================== SECTION PROCESSING ==================== -->
+
+<xsl:template name="process-with-sections">
 <xsl:param name="remaining"/>
-<xsl:param name="list-type"/>
-<items>
-<xsl:call-template name="collect-list-items-recursive">
-<xsl:with-param name="remaining" select="$remaining"/>
-<xsl:with-param name="list-type" select="$list-type"/>
-</xsl:call-template>
-</items>
-</xsl:template>
-<xsl:template name="collect-list-items-recursive">
-<xsl:param name="remaining"/>
-<xsl:param name="list-type"/>
-<xsl:if test="string-length($remaining) > 0">
-<xsl:variable name="line">
+<xsl:param name="count" select="0"/>
+<xsl:if test="normalize-space($remaining) != '' and $count &lt; 100">
+<xsl:variable name="first-line">
 <xsl:choose>
 <xsl:when test="contains($remaining, '&#10;')">
 <xsl:value-of select="substring-before($remaining, '&#10;')"/>
@@ -788,63 +555,462 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </xsl:otherwise>
 </xsl:choose>
 </xsl:variable>
-<xsl:variable name="rest">
-<xsl:if test="contains($remaining, '&#10;')">
-<xsl:value-of select="substring-after($remaining, '&#10;')"/>
+
+<xsl:choose>
+<xsl:when test="starts-with($first-line, '#')">
+<xsl:variable name="section-content">
+<xsl:call-template name="get-section-content">
+<xsl:with-param name="text" select="$remaining"/>
+</xsl:call-template>
+</xsl:variable>
+
+<xsl:variable name="rest-content">
+<xsl:call-template name="get-rest-after-section">
+<xsl:with-param name="text" select="$remaining"/>
+</xsl:call-template>
+</xsl:variable>
+
+<section>
+<div>
+<xsl:call-template name="process-lines">
+<xsl:with-param name="remaining" select="$section-content"/>
+<xsl:with-param name="in-code-block" select="false()"/>
+<xsl:with-param name="in-blockquote" select="false()"/>
+<xsl:with-param name="in-details" select="false()"/>
+<xsl:with-param name="paragraph-acc" select="''"/>
+<xsl:with-param name="enable-sections" select="false()"/>
+</xsl:call-template>
+</div>
+</section>
+
+<xsl:if test="normalize-space($rest-content) != ''">
+<xsl:call-template name="process-with-sections">
+<xsl:with-param name="remaining" select="$rest-content"/>
+<xsl:with-param name="count" select="$count + 1"/>
+</xsl:call-template>
 </xsl:if>
-</xsl:variable>
-<xsl:variable name="is-list-item">
-<xsl:choose>
-<xsl:when test="$list-type = 'task' and (starts-with($line, '- [ ]') or starts-with($line, '- [x]') or starts-with($line, '- [X]'))">true</xsl:when>
-<xsl:when test="$list-type = 'ol' and substring($line, 1, 1) &gt;= '0' and substring($line, 1, 1) &lt;= '9' and contains(substring($line, 1, 5), '. ')">true</xsl:when>
-<xsl:when test="$list-type = 'ul' and starts-with($line, '-') and substring($line, string-length(substring-before(concat($line, ' '), ' ')) + 1, 1) = ' ' and not(starts-with($line, '- ['))">true</xsl:when>
-<xsl:otherwise>false</xsl:otherwise>
-</xsl:choose>
-</xsl:variable>
-<xsl:choose>
-<xsl:when test="$is-list-item = 'true'">
-<!-- Extract item text -->
-<xsl:variable name="item-text">
-<xsl:choose>
-<xsl:when test="$list-type = 'task'">
-<xsl:value-of select="substring-after($line, '] ')"/>
 </xsl:when>
-<xsl:when test="$list-type = 'ol'">
-<xsl:value-of select="normalize-space(substring-after($line, '. '))"/>
-</xsl:when>
-<xsl:when test="$list-type = 'ul'">
-<xsl:variable name="level">
-<xsl:call-template name="count-list-level">
-<xsl:with-param name="line" select="$line"/>
+<xsl:otherwise>
+<!-- No header found, process as regular content -->
+<xsl:call-template name="process-lines">
+<xsl:with-param name="remaining" select="$remaining"/>
+<xsl:with-param name="in-code-block" select="false()"/>
+<xsl:with-param name="in-blockquote" select="false()"/>
+<xsl:with-param name="in-details" select="false()"/>
+<xsl:with-param name="paragraph-acc" select="''"/>
+<xsl:with-param name="enable-sections" select="false()"/>
 </xsl:call-template>
-</xsl:variable>
-<xsl:call-template name="get-list-item-text">
-<xsl:with-param name="line" select="$line"/>
-<xsl:with-param name="level" select="$level"/>
-</xsl:call-template>
-</xsl:when>
-</xsl:choose>
-</xsl:variable>
-<item>
-<xsl:if test="$list-type = 'task' and (contains($line, '[x]') or contains($line, '[X]'))">
-<xsl:attribute name="checked">true</xsl:attribute>
-</xsl:if>
-<xsl:value-of select="$item-text"/>
-</item>
-<!-- Continue collecting -->
-<xsl:call-template name="collect-list-items-recursive">
-<xsl:with-param name="remaining" select="$rest"/>
-<xsl:with-param name="list-type" select="$list-type"/>
-</xsl:call-template>
-</xsl:when>
-<xsl:when test="normalize-space($line) = '' or not($is-list-item = 'true')">
-<!-- End of list - return remaining content -->
-<after><xsl:value-of select="$remaining"/></after>
-</xsl:when>
+</xsl:otherwise>
 </xsl:choose>
 </xsl:if>
 </xsl:template>
-<!-- Helper templates -->
+
+<xsl:template name="get-section-content">
+<xsl:param name="text"/>
+<xsl:param name="accumulator" select="''"/>
+<xsl:param name="in-block" select="false()"/>
+<xsl:param name="started" select="false()"/>
+<xsl:param name="depth" select="0"/>
+
+<xsl:variable name="line">
+<xsl:choose>
+<xsl:when test="contains($text, '&#10;')">
+<xsl:value-of select="substring-before($text, '&#10;')"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$text"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+
+<xsl:variable name="rest">
+<xsl:if test="contains($text, '&#10;')">
+<xsl:value-of select="substring-after($text, '&#10;')"/>
+</xsl:if>
+</xsl:variable>
+
+<xsl:choose>
+<xsl:when test="string-length($text) = 0 or $depth > 500">
+<xsl:value-of select="$accumulator"/>
+</xsl:when>
+<xsl:when test="starts-with($line, '```')">
+<xsl:call-template name="get-section-content">
+<xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="accumulator" select="concat($accumulator, $line, '&#10;')"/>
+<xsl:with-param name="in-block" select="not($in-block)"/>
+<xsl:with-param name="started" select="$started"/>
+<xsl:with-param name="depth" select="$depth + 1"/>
+</xsl:call-template>
+</xsl:when>
+<xsl:when test="starts-with($line, '#') and not($in-block) and $started">
+<xsl:value-of select="$accumulator"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:call-template name="get-section-content">
+<xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="accumulator" select="concat($accumulator, $line, '&#10;')"/>
+<xsl:with-param name="in-block" select="$in-block"/>
+<xsl:with-param name="started" select="true()"/>
+<xsl:with-param name="depth" select="$depth + 1"/>
+</xsl:call-template>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:template>
+
+<xsl:template name="get-rest-after-section">
+<xsl:param name="text"/>
+<xsl:param name="in-block" select="false()"/>
+<xsl:param name="started" select="false()"/>
+<xsl:param name="depth" select="0"/> 
+
+<xsl:variable name="line">
+<xsl:choose>
+<xsl:when test="contains($text, '&#10;')">
+<xsl:value-of select="substring-before($text, '&#10;')"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$text"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+
+<xsl:variable name="rest">
+<xsl:if test="contains($text, '&#10;')">
+<xsl:value-of select="substring-after($text, '&#10;')"/>
+</xsl:if>
+</xsl:variable>
+
+<xsl:choose>
+<xsl:when test="string-length($text) = 0 or $depth > 500"></xsl:when>
+<xsl:when test="starts-with($line, '```')">
+<xsl:call-template name="get-rest-after-section">
+<xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="in-block" select="not($in-block)"/>
+<xsl:with-param name="started" select="$started"/>
+<xsl:with-param name="depth" select="$depth + 1"/>
+</xsl:call-template>
+</xsl:when>
+<xsl:when test="starts-with($line, '#') and not($in-block) and $started">
+<xsl:value-of select="$text"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:call-template name="get-rest-after-section">
+<xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="in-block" select="$in-block"/>
+<xsl:with-param name="started" select="true()"/>
+<xsl:with-param name="depth" select="$depth + 1"/>
+</xsl:call-template>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:template>
+
+<!-- ==================== LIST PROCESSING ==================== -->
+
+<xsl:template name="process-list-block">
+<xsl:param name="remaining"/>
+<xsl:param name="enable-sections"/>
+
+<xsl:variable name="list-lines">
+<xsl:call-template name="collect-list-lines">
+<xsl:with-param name="text" select="$remaining"/>
+</xsl:call-template>
+</xsl:variable>
+
+<xsl:variable name="rest-after-list">
+<xsl:call-template name="skip-list-lines">
+<xsl:with-param name="text" select="$remaining"/>
+</xsl:call-template>
+</xsl:variable>
+
+<xsl:call-template name="build-lists">
+<xsl:with-param name="text" select="$list-lines"/>
+</xsl:call-template>
+
+<xsl:call-template name="process-lines">
+<xsl:with-param name="remaining" select="$rest-after-list"/>
+<xsl:with-param name="in-code-block" select="false()"/>
+<xsl:with-param name="in-blockquote" select="false()"/>
+<xsl:with-param name="in-details" select="false()"/>
+<xsl:with-param name="paragraph-acc" select="''"/>
+<xsl:with-param name="enable-sections" select="$enable-sections"/>
+</xsl:call-template>
+</xsl:template>
+
+<xsl:template name="collect-list-lines">
+<xsl:param name="text"/>
+<xsl:param name="accumulator" select="''"/>
+
+<xsl:variable name="line">
+<xsl:choose>
+<xsl:when test="contains($text, '&#10;')">
+<xsl:value-of select="substring-before($text, '&#10;')"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$text"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+
+<xsl:variable name="rest">
+<xsl:if test="contains($text, '&#10;')">
+<xsl:value-of select="substring-after($text, '&#10;')"/>
+</xsl:if>
+</xsl:variable>
+
+<xsl:variable name="is-list-item">
+<xsl:choose>
+<xsl:when test="starts-with($line, '- [ ]') or starts-with($line, '- [x]') or starts-with($line, '- [X]')">true</xsl:when>
+<xsl:when test="substring($line, 1, 1) &gt;= '0' and substring($line, 1, 1) &lt;= '9' and contains(substring($line, 1, 5), '. ')">true</xsl:when>
+<xsl:when test="starts-with($line, '- ') or starts-with($line, '--')">true</xsl:when>
+<xsl:otherwise>false</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+
+<xsl:choose>
+<xsl:when test="$is-list-item = 'true' and string-length($rest) > 0">
+<xsl:call-template name="collect-list-lines">
+<xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="accumulator" select="concat($accumulator, $line, '&#10;')"/>
+</xsl:call-template>
+</xsl:when>
+<xsl:when test="$is-list-item = 'true'">
+<xsl:value-of select="concat($accumulator, $line)"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$accumulator"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:template>
+
+<xsl:template name="skip-list-lines">
+<xsl:param name="text"/>
+
+<xsl:variable name="line">
+<xsl:choose>
+<xsl:when test="contains($text, '&#10;')">
+<xsl:value-of select="substring-before($text, '&#10;')"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$text"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+
+<xsl:variable name="rest">
+<xsl:if test="contains($text, '&#10;')">
+<xsl:value-of select="substring-after($text, '&#10;')"/>
+</xsl:if>
+</xsl:variable>
+
+<xsl:variable name="is-list-item">
+<xsl:choose>
+<xsl:when test="starts-with($line, '- [ ]') or starts-with($line, '- [x]') or starts-with($line, '- [X]')">true</xsl:when>
+<xsl:when test="substring($line, 1, 1) &gt;= '0' and substring($line, 1, 1) &lt;= '9' and contains(substring($line, 1, 5), '. ')">true</xsl:when>
+<xsl:when test="starts-with($line, '- ') or starts-with($line, '--')">true</xsl:when>
+<xsl:otherwise>false</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+
+<xsl:choose>
+<xsl:when test="$is-list-item = 'true' and string-length($rest) > 0">
+<xsl:call-template name="skip-list-lines">
+<xsl:with-param name="text" select="$rest"/>
+</xsl:call-template>
+</xsl:when>
+<xsl:when test="$is-list-item = 'false'">
+<xsl:value-of select="$text"/>
+</xsl:when>
+</xsl:choose>
+</xsl:template>
+
+<xsl:template name="build-lists">
+<xsl:param name="text"/>
+<xsl:if test="normalize-space($text) != ''">
+<xsl:variable name="first-line">
+<xsl:choose>
+<xsl:when test="contains($text, '&#10;')">
+<xsl:value-of select="substring-before($text, '&#10;')"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$text"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+
+<xsl:variable name="first-type">
+<xsl:choose>
+<xsl:when test="substring($first-line, 1, 1) &gt;= '0' and substring($first-line, 1, 1) &lt;= '9' and contains(substring($first-line, 1, 5), '. ')">ol</xsl:when>
+<xsl:otherwise>ul</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+
+<xsl:element name="{$first-type}">
+<xsl:call-template name="build-list-items">
+<xsl:with-param name="text" select="$text"/>
+<xsl:with-param name="list-type" select="$first-type"/>
+</xsl:call-template>
+</xsl:element>
+</xsl:if>
+</xsl:template>
+
+<xsl:template name="build-list-items">
+<xsl:param name="text"/>
+<xsl:param name="list-type"/>
+
+<xsl:if test="normalize-space($text) != ''">
+<xsl:variable name="line">
+<xsl:choose>
+<xsl:when test="contains($text, '&#10;')">
+<xsl:value-of select="substring-before($text, '&#10;')"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$text"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+
+<xsl:variable name="rest">
+<xsl:if test="contains($text, '&#10;')">
+<xsl:value-of select="substring-after($text, '&#10;')"/>
+</xsl:if>
+</xsl:variable>
+
+<!-- Task list item -->
+<xsl:choose>
+<xsl:when test="starts-with($line, '- [ ]') or starts-with($line, '- [x]') or starts-with($line, '- [X]')">
+<li class="task-list-item">
+<input type="checkbox" name="_todo" disabled="disabled">
+<xsl:if test="contains($line, '[x]') or contains($line, '[X]')">
+<xsl:attribute name="checked">checked</xsl:attribute>
+</xsl:if>
+</input>
+<xsl:call-template name="process-inline">
+<xsl:with-param name="text" select="substring-after($line, '] ')"/>
+</xsl:call-template>
+</li>
+</xsl:when>
+
+<!-- Ordered list item -->
+<xsl:when test="substring($line, 1, 1) &gt;= '0' and substring($line, 1, 1) &lt;= '9' and contains(substring($line, 1, 5), '. ')">
+<li>
+<xsl:call-template name="process-inline">
+<xsl:with-param name="text" select="normalize-space(substring-after($line, '. '))"/>
+</xsl:call-template>
+</li>
+</xsl:when>
+
+<!-- Nested list -->
+<xsl:when test="starts-with($line, '--')">
+<li>
+<xsl:variable name="nested-lines">
+<xsl:call-template name="collect-nested-items">
+<xsl:with-param name="text" select="$text"/>
+</xsl:call-template>
+</xsl:variable>
+<xsl:call-template name="build-lists">
+<xsl:with-param name="text" select="$nested-lines"/>
+</xsl:call-template>
+</li>
+<xsl:call-template name="build-list-items">
+<xsl:with-param name="text">
+<xsl:call-template name="skip-nested-items">
+<xsl:with-param name="text" select="$text"/>
+</xsl:call-template>
+</xsl:with-param>
+<xsl:with-param name="list-type" select="$list-type"/>
+</xsl:call-template>
+</xsl:when>
+
+<!-- Regular list item -->
+<xsl:when test="starts-with($line, '- ')">
+<li>
+<xsl:call-template name="process-inline">
+<xsl:with-param name="text" select="substring-after($line, '- ')"/>
+</xsl:call-template>
+</li>
+</xsl:when>
+</xsl:choose>
+
+<xsl:if test="normalize-space($rest) != '' and not(starts-with($line, '--'))">
+<xsl:call-template name="build-list-items">
+<xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="list-type" select="$list-type"/>
+</xsl:call-template>
+</xsl:if>
+</xsl:if>
+</xsl:template>
+
+<xsl:template name="collect-nested-items">
+<xsl:param name="text"/>
+<xsl:param name="accumulator" select="''"/>
+
+<xsl:variable name="line">
+<xsl:choose>
+<xsl:when test="contains($text, '&#10;')">
+<xsl:value-of select="substring-before($text, '&#10;')"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$text"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+
+<xsl:variable name="rest">
+<xsl:if test="contains($text, '&#10;')">
+<xsl:value-of select="substring-after($text, '&#10;')"/>
+</xsl:if>
+</xsl:variable>
+
+<xsl:choose>
+<xsl:when test="starts-with($line, '--') and string-length($rest) > 0">
+<xsl:call-template name="collect-nested-items">
+<xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="accumulator" select="concat($accumulator, substring($line, 2), '&#10;')"/>
+</xsl:call-template>
+</xsl:when>
+<xsl:when test="starts-with($line, '--')">
+<xsl:value-of select="concat($accumulator, substring($line, 2))"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$accumulator"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:template>
+
+<xsl:template name="skip-nested-items">
+<xsl:param name="text"/>
+
+<xsl:variable name="line">
+<xsl:choose>
+<xsl:when test="contains($text, '&#10;')">
+<xsl:value-of select="substring-before($text, '&#10;')"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$text"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+
+<xsl:variable name="rest">
+<xsl:if test="contains($text, '&#10;')">
+<xsl:value-of select="substring-after($text, '&#10;')"/>
+</xsl:if>
+</xsl:variable>
+
+<xsl:choose>
+<xsl:when test="starts-with($line, '--') and string-length($rest) > 0">
+<xsl:call-template name="skip-nested-items">
+<xsl:with-param name="text" select="$rest"/>
+</xsl:call-template>
+</xsl:when>
+<xsl:when test="not(starts-with($line, '--'))">
+<xsl:value-of select="$text"/>
+</xsl:when>
+</xsl:choose>
+</xsl:template>
+
+<!-- ==================== HELPER TEMPLATES ==================== -->
+
 <xsl:template name="flush-paragraph">
 <xsl:param name="paragraph"/>
 <xsl:if test="normalize-space($paragraph) != ''">
@@ -855,7 +1021,92 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </p>
 </xsl:if>
 </xsl:template>
-<!-- Unified heading processing -->
+
+<xsl:template name="extract-until-marker">
+<xsl:param name="text"/>
+<xsl:param name="marker"/>
+<xsl:param name="accumulator" select="''"/>
+
+<xsl:choose>
+<xsl:when test="string-length($text) = 0">
+<xsl:value-of select="$accumulator"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:variable name="line">
+<xsl:choose>
+<xsl:when test="contains($text, '&#10;')">
+<xsl:value-of select="substring-before($text, '&#10;')"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$text"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+
+<xsl:variable name="rest">
+<xsl:if test="contains($text, '&#10;')">
+<xsl:value-of select="substring-after($text, '&#10;')"/>
+</xsl:if>
+</xsl:variable>
+
+<xsl:choose>
+<xsl:when test="$line = $marker">
+<xsl:value-of select="$accumulator"/>
+</xsl:when>
+<xsl:when test="string-length($rest) = 0">
+<xsl:value-of select="concat($accumulator, $line)"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:call-template name="extract-until-marker">
+<xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="marker" select="$marker"/>
+<xsl:with-param name="accumulator" select="concat($accumulator, $line, '&#10;')"/>
+</xsl:call-template>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:template>
+
+<xsl:template name="skip-past-marker">
+<xsl:param name="text"/>
+<xsl:param name="marker"/>
+
+<xsl:choose>
+<xsl:when test="string-length($text) = 0"></xsl:when>
+<xsl:otherwise>
+<xsl:variable name="line">
+<xsl:choose>
+<xsl:when test="contains($text, '&#10;')">
+<xsl:value-of select="substring-before($text, '&#10;')"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$text"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+
+<xsl:variable name="rest">
+<xsl:if test="contains($text, '&#10;')">
+<xsl:value-of select="substring-after($text, '&#10;')"/>
+</xsl:if>
+</xsl:variable>
+
+<xsl:choose>
+<xsl:when test="$line = $marker">
+<xsl:value-of select="$rest"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:call-template name="skip-past-marker">
+<xsl:with-param name="text" select="$rest"/>
+<xsl:with-param name="marker" select="$marker"/>
+</xsl:call-template>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:template>
+
 <xsl:template name="process-heading">
 <xsl:param name="line"/>
 <xsl:param name="shift-level" select="false()"/>
@@ -976,6 +1227,7 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </xsl:when>
 </xsl:choose>
 </xsl:template>
+
 <!-- Content extraction templates -->
 <xsl:template name="extract-lead-content">
 <xsl:param name="text"/>
@@ -984,10 +1236,15 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 <xsl:with-param name="accumulator" select="''"/>
 </xsl:call-template>
 </xsl:template>
+
 <xsl:template name="extract-lead-content-recursive">
 <xsl:param name="remaining"/>
 <xsl:param name="accumulator"/>
-<xsl:if test="string-length($remaining) > 0">
+<xsl:choose>
+<xsl:when test="string-length($remaining) = 0">
+<xsl:value-of select="$accumulator"/>
+</xsl:when>
+<xsl:otherwise>
 <xsl:variable name="line">
 <xsl:choose>
 <xsl:when test="contains($remaining, '&#10;')">
@@ -1024,17 +1281,22 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </xsl:call-template>
 </xsl:otherwise>
 </xsl:choose>
-</xsl:if>
+</xsl:otherwise>
+</xsl:choose>
 </xsl:template>
+
 <xsl:template name="extract-content-from-first-header">
 <xsl:param name="text"/>
 <xsl:call-template name="skip-to-first-header">
 <xsl:with-param name="remaining" select="$text"/>
 </xsl:call-template>
 </xsl:template>
+
 <xsl:template name="skip-to-first-header">
 <xsl:param name="remaining"/>
-<xsl:if test="string-length($remaining) > 0">
+<xsl:choose>
+<xsl:when test="string-length($remaining) = 0"></xsl:when>
+<xsl:otherwise>
 <xsl:variable name="line">
 <xsl:choose>
 <xsl:when test="contains($remaining, '&#10;')">
@@ -1060,8 +1322,10 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </xsl:call-template>
 </xsl:otherwise>
 </xsl:choose>
-</xsl:if>
+</xsl:otherwise>
+</xsl:choose>
 </xsl:template>
+
 <!-- YAML processing templates -->
 <xsl:template name="extract-yaml-title">
   <xsl:param name="text" />
@@ -1079,15 +1343,19 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
     </xsl:when>
   </xsl:choose>
 </xsl:template>
+
 <xsl:template name="parse-yaml-name">
   <xsl:param name="yaml" />
   <xsl:call-template name="find-yaml-name">
     <xsl:with-param name="remaining" select="$yaml" />
   </xsl:call-template>
 </xsl:template>
+
 <xsl:template name="find-yaml-name">
 <xsl:param name="remaining"/>
-<xsl:if test="string-length($remaining) > 0">
+<xsl:choose>
+<xsl:when test="string-length($remaining) = 0">Nameless</xsl:when>
+<xsl:otherwise>
 <xsl:variable name="line">
 <xsl:choose>
 <xsl:when test="contains($remaining, '&#10;')">
@@ -1114,8 +1382,10 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </xsl:when>
 <xsl:otherwise>Nameless</xsl:otherwise>
 </xsl:choose>
-</xsl:if>
+</xsl:otherwise>
+</xsl:choose>
 </xsl:template>
+
 <xsl:template name="remove-yaml-frontmatter">
 <xsl:param name="text"/>
 <xsl:choose>
@@ -1135,10 +1405,13 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
+
 <xsl:template name="check-for-headers">
 <xsl:param name="text"/>
 <xsl:param name="in-triple-backticks-block" select="false()"/>
-<xsl:if test="string-length($text) > 0">
+<xsl:choose>
+<xsl:when test="string-length($text) = 0">false</xsl:when>
+<xsl:otherwise>
 <xsl:variable name="line">
 <xsl:choose>
 <xsl:when test="contains($text, '&#10;')">
@@ -1155,14 +1428,12 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </xsl:if>
 </xsl:variable>
 <xsl:choose>
-<!-- Toggle block state on ``` -->
 <xsl:when test="starts-with($line, '```')">
 <xsl:call-template name="check-for-headers">
 <xsl:with-param name="text" select="$rest"/>
 <xsl:with-param name="in-triple-backticks-block" select="not($in-triple-backticks-block)"/>
 </xsl:call-template>
 </xsl:when>
-<!-- Found header outside of blocks -->
 <xsl:when test="starts-with($line, '#') and $in-triple-backticks-block = false()">
 <xsl:text>true</xsl:text>
 </xsl:when>
@@ -1176,79 +1447,22 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 <xsl:text>false</xsl:text>
 </xsl:otherwise>
 </xsl:choose>
-</xsl:if>
-</xsl:template>
-<!-- Utility templates -->
-<xsl:template name="count-heading-level">
-<xsl:param name="line"/>
-<xsl:param name="count" select="0"/>
-<xsl:choose>
-<xsl:when test="starts-with($line, '#')">
-<xsl:call-template name="count-heading-level">
-<xsl:with-param name="line" select="substring($line, 2)"/>
-<xsl:with-param name="count" select="$count + 1"/>
-</xsl:call-template>
-</xsl:when>
-<xsl:otherwise>
-<xsl:value-of select="$count"/>
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
-<xsl:template name="close-sections">
-<xsl:param name="from-level"/>
-<xsl:param name="to-level"/>
-<!-- No longer using disable-output-escaping -->
-</xsl:template>
-<xsl:template name="count-list-level">
-<xsl:param name="line"/>
-<xsl:param name="count" select="0"/>
-<xsl:choose>
-<xsl:when test="starts-with($line, '-') and not(starts-with($line, '- '))">
-<xsl:call-template name="count-list-level">
-<xsl:with-param name="line" select="substring($line, 2)"/>
-<xsl:with-param name="count" select="$count + 1"/>
-</xsl:call-template>
-</xsl:when>
-<xsl:otherwise>
-<xsl:value-of select="$count + 1"/>
-</xsl:otherwise>
-</xsl:choose>
-</xsl:template>
-<xsl:template name="get-list-item-text">
-<xsl:param name="line"/>
-<xsl:param name="level"/>
-<xsl:variable name="prefix">
-<xsl:call-template name="repeat-string">
-<xsl:with-param name="string" select="'-'"/>
-<xsl:with-param name="count" select="$level"/>
-</xsl:call-template>
-</xsl:variable>
-<xsl:value-of select="normalize-space(substring-after($line, concat($prefix, ' ')))"/>
-</xsl:template>
-<xsl:template name="repeat-string">
-<xsl:param name="string"/>
-<xsl:param name="count"/>
-<xsl:if test="$count > 0">
-<xsl:value-of select="$string"/>
-<xsl:call-template name="repeat-string">
-<xsl:with-param name="string" select="$string"/>
-<xsl:with-param name="count" select="$count - 1"/>
-</xsl:call-template>
-</xsl:if>
-</xsl:template>
+
 <xsl:template name="generate-heading-id">
 <xsl:param name="text"/>
 <xsl:call-template name="clean-slug">
 <xsl:with-param name="text" select="normalize-space(translate($text, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'))"/>
 </xsl:call-template>
 </xsl:template>
-<!-- Inline processing -->
+
 <xsl:template name="process-inline">
 <xsl:param name="text"/>
 <xsl:choose>
-<!-- Inline code (process FIRST - most literal) -->
+<!-- Inline code -->
 <xsl:when test="contains($text, '`')">
-<!-- Process text before backtick for other inline elements -->
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="substring-before($text, '`')"/>
 </xsl:call-template>
@@ -1275,7 +1489,7 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 <xsl:variable name="after-footnote" select="substring-after($text, ']')"/>
 <label class="f-n">
 <input type="checkbox" hidden="hidden" name="f-n"/>
-<span></span><!-- ... -->
+<span></span>
 <span><xsl:value-of select="$footnote-text"/></span>
 </label>
 <xsl:call-template name="process-inline">
@@ -1294,18 +1508,16 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 <xsl:when test="starts-with($after-alt, '(') and contains($after-alt, ')')">
 <xsl:variable name="src" select="substring-before(substring-after($after-alt, '('), ')')"/>
 <xsl:choose>
-<!-- Image with alt text (toggle via css)-->
 <xsl:when test="normalize-space($alt-text) != ''">
 <span class="img_w_alt">
 <label>
 <img src="../i/{$src}" alt="{$alt-text}"/>
 <input name="i_a" type="checkbox" hidden="hidden"/>
-<span></span><!--CSS contains text-->
+<span></span>
 <span><xsl:value-of select="$alt-text"/></span>
 </label>
 </span>
 </xsl:when>
-<!-- Image without alt text - regular img -->
 <xsl:otherwise>
 <img src="../i/{$src}" alt=""/>
 </xsl:otherwise>
@@ -1324,7 +1536,7 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </xsl:otherwise>
 </xsl:choose>
 </xsl:when>
-<!-- Wikilinks [[page]] or [[page|text]] etc -->
+<!-- Wikilinks [[page]] or [[page|text]] -->
 <xsl:when test="contains($text, '[[') and contains(substring-after($text, '[['), ']]')">
 <xsl:value-of select="substring-before($text, '[[')"/>
 <xsl:variable name="wikilink-content" select="substring-before(substring-after($text, '[['), ']]')"/>
@@ -1370,27 +1582,22 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </xsl:when>
 <!-- Strike-through -->
 <xsl:when test="contains($text, '~~')">
-<!-- Process text before the first ~~ -->
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="substring-before($text, '~~')"/>
 </xsl:call-template>
 <xsl:variable name="after-first" select="substring-after($text, '~~')"/>
 <xsl:choose>
 <xsl:when test="contains($after-first, '~~')">
-<!-- Found closing ~~ -->
 <del>
-<!-- Process content between ~~ tags -->
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="substring-before($after-first, '~~')"/>
 </xsl:call-template>
 </del>
-<!-- Process text after closing ~~ -->
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="substring-after($after-first, '~~')"/>
 </xsl:call-template>
 </xsl:when>
 <xsl:otherwise>
-<!-- No closing ~~, output as-is -->
 <xsl:text>~~</xsl:text>
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="$after-first"/>
@@ -1400,27 +1607,22 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </xsl:when>
 <!-- Bold -->
 <xsl:when test="contains($text, '**')">
-<!-- Process text before the first ** -->
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="substring-before($text, '**')"/>
 </xsl:call-template>
 <xsl:variable name="after-first" select="substring-after($text, '**')"/>
 <xsl:choose>
 <xsl:when test="contains($after-first, '**')">
-<!-- Found closing ** -->
 <strong>
-<!-- Process content between ** tags -->
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="substring-before($after-first, '**')"/>
 </xsl:call-template>
 </strong>
-<!-- Process text after closing ** -->
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="substring-after($after-first, '**')"/>
 </xsl:call-template>
 </xsl:when>
 <xsl:otherwise>
-<!-- No closing **, output as-is -->
 <xsl:text>**</xsl:text>
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="$after-first"/>
@@ -1430,27 +1632,22 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </xsl:when>
 <!-- Italic -->
 <xsl:when test="contains($text, '*')">
-<!-- Process text before the first * -->
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="substring-before($text, '*')"/>
 </xsl:call-template>
 <xsl:variable name="after-first" select="substring-after($text, '*')"/>
 <xsl:choose>
 <xsl:when test="contains($after-first, '*')">
-<!-- Found closing * -->
 <em>
-<!-- Process content between * tags -->
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="substring-before($after-first, '*')"/>
 </xsl:call-template>
 </em>
-<!-- Process text after closing * -->
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="substring-after($after-first, '*')"/>
 </xsl:call-template>
 </xsl:when>
 <xsl:otherwise>
-<!-- No closing *, output as-is -->
 <xsl:text>*</xsl:text>
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="$after-first"/>
@@ -1458,13 +1655,12 @@ title="SKIP Parses plain text, mark up and Markdown to HTML via .xsl (XSLT 1.0) 
 </xsl:otherwise>
 </xsl:choose>
 </xsl:when>
-<!-- Line breaks (two spaces at end) -->
+<!-- Line breaks -->
 <xsl:when test="substring($text, string-length($text) - 1) = '  '">
 <xsl:value-of select="substring($text, 1, string-length($text) - 2)"/>
 <br/>
 </xsl:when>
-<!-- Raw URLs (`text http:// or https:// text`)
-process last to avoid conflicts with marked up links -->
+<!-- Raw URLs -->
 <xsl:when test="contains($text, 'http://') or contains($text, 'https://')">
 <xsl:choose>
 <xsl:when test="contains($text, 'https://')">
@@ -1481,17 +1677,19 @@ process last to avoid conflicts with marked up links -->
 </xsl:otherwise>
 </xsl:choose>
 </xsl:when>
-<!-- END OF INLINE No more inline elements -->
 <xsl:otherwise>
 <xsl:value-of select="$text"/>
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
+
 <!-- TOC generation -->
 <xsl:template name="generate-toc">
 <xsl:param name="text"/>
 <xsl:param name="in-triple-backticks-block" select="false()"/>
-<xsl:if test="string-length($text) > 0">
+<xsl:choose>
+<xsl:when test="string-length($text) = 0"></xsl:when>
+<xsl:otherwise>
 <xsl:variable name="line">
 <xsl:choose>
 <xsl:when test="contains($text, '&#10;')">
@@ -1508,15 +1706,12 @@ process last to avoid conflicts with marked up links -->
 </xsl:if>
 </xsl:variable>
 <xsl:choose>
-<!-- Handle triple backticks state changes -->
 <xsl:when test="starts-with($line, '```')">
-<!-- toggle collecting headers for TOC when in any ``` block-->
 <xsl:call-template name="generate-toc">
 <xsl:with-param name="text" select="$rest"/>
 <xsl:with-param name="in-triple-backticks-block" select="not($in-triple-backticks-block)"/>
 </xsl:call-template>
 </xsl:when>
-<!-- Check if this line is a header (only if not in any triple backticks block) -->
 <xsl:when test="starts-with($line, '#') and $in-triple-backticks-block = false()">
 <xsl:variable name="heading-text" select="normalize-space(translate($line, '#', ''))"/>
 <xsl:variable name="heading-id">
@@ -1524,7 +1719,6 @@ process last to avoid conflicts with marked up links -->
 <xsl:with-param name="text" select="$heading-text"/>
 </xsl:call-template>
 </xsl:variable>
-<!-- Determine heading level -->
 <xsl:variable name="heading-level">
 <xsl:choose>
 <xsl:when test="starts-with($line, '######')">6</xsl:when>
@@ -1540,13 +1734,11 @@ process last to avoid conflicts with marked up links -->
 <xsl:value-of select="$heading-text"/>
 </a>
 </li>
-<!-- Continue with the rest -->
 <xsl:call-template name="generate-toc">
 <xsl:with-param name="text" select="$rest"/>
 <xsl:with-param name="in-triple-backticks-block" select="$in-triple-backticks-block"/>
 </xsl:call-template>
 </xsl:when>
-<!-- Continue with the rest (not a header nor state change) -->
 <xsl:otherwise>
 <xsl:call-template name="generate-toc">
 <xsl:with-param name="text" select="$rest"/>
@@ -1554,9 +1746,93 @@ process last to avoid conflicts with marked up links -->
 </xsl:call-template>
 </xsl:otherwise>
 </xsl:choose>
-</xsl:if>
+</xsl:otherwise>
+</xsl:choose>
 </xsl:template>
-<!-- Link processing templates -->
+
+
+<xsl:template name="process-link">
+<xsl:param name="url"/>
+<xsl:param name="link-text"/>
+<xsl:param name="auto-generate-text" select="false()"/>
+<xsl:variable name="final-link-text">
+<xsl:choose>
+<xsl:when test="normalize-space($link-text) = '' and $auto-generate-text = true()">
+<xsl:choose>
+<xsl:when test="starts-with($url, '#')">
+<xsl:value-of select="substring-after($url, '#')"/>
+</xsl:when>
+<xsl:when test="contains($url, '#') and not(contains($url, '://'))">
+<xsl:value-of select="substring-after($url, '#')"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:call-template name="generate-link-text-from-url">
+<xsl:with-param name="url" select="$url"/>
+</xsl:call-template>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$link-text"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+<xsl:choose>
+<xsl:when test="starts-with($url, '#')">
+<xsl:variable name="anchor-part" select="substring-after($url, '#')"/>
+<xsl:variable name="processed-anchor">
+<xsl:call-template name="make-wiki-url">
+<xsl:with-param name="text" select="$anchor-part"/>
+<xsl:with-param name="no-extension" select="true()"/>
+</xsl:call-template>
+</xsl:variable>
+<xsl:variable name="clean-link-text">
+<xsl:choose>
+<xsl:when test="starts-with($final-link-text, '#')">
+<xsl:value-of select="substring-after($final-link-text, '#')"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="$final-link-text"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+<a href="#{$processed-anchor}" tabindex="0"><xsl:value-of select="$clean-link-text"/></a>
+</xsl:when>
+<xsl:when test="contains($url, '://')">
+<a href="{$url}" tabindex="0"><xsl:value-of select="$final-link-text"/></a>
+</xsl:when>
+<xsl:when test="starts-with($url, '/') or starts-with($url, '../') or starts-with($url, './')">
+<a href="{$url}" tabindex="0"><xsl:value-of select="$final-link-text"/></a>
+</xsl:when>
+<xsl:when test="contains($url, '#') and not(contains($url, '://'))">
+<xsl:variable name="page-part" select="substring-before($url, '#')"/>
+<xsl:variable name="anchor-part" select="substring-after($url, '#')"/>
+<xsl:variable name="processed-page">
+<xsl:call-template name="process-page-url">
+<xsl:with-param name="url" select="$page-part"/>
+</xsl:call-template>
+</xsl:variable>
+<xsl:variable name="processed-anchor">
+<xsl:call-template name="make-wiki-url">
+<xsl:with-param name="text" select="$anchor-part"/>
+<xsl:with-param name="no-extension" select="true()"/>
+</xsl:call-template>
+</xsl:variable>
+<a href="{$processed-page}#{$processed-anchor}" title="{$page-part}" tabindex="0">
+<xsl:value-of select="$final-link-text"/>
+</a>
+</xsl:when>
+<xsl:otherwise>
+<xsl:variable name="processed-page">
+<xsl:call-template name="process-page-url">
+<xsl:with-param name="url" select="$url"/>
+</xsl:call-template>
+</xsl:variable>
+<a href="{$processed-page}" tabindex="0"><xsl:value-of select="$final-link-text"/></a>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:template>
+
 <xsl:template name="make-wiki-url">
 <xsl:param name="text"/>
 <xsl:param name="no-extension" select="false()"/>
@@ -1574,102 +1850,10 @@ process last to avoid conflicts with marked up links -->
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
-<!-- process link -->
-<xsl:template name="process-link">
-<xsl:param name="url"/>
-<xsl:param name="link-text"/>
-<xsl:param name="auto-generate-text" select="false()"/>
-<xsl:variable name="final-link-text">
-<xsl:choose>
-<xsl:when test="normalize-space($link-text) = '' and $auto-generate-text = true()">
-<xsl:choose>
-<!-- Jump link with no text. use anchor part -->
-<xsl:when test="starts-with($url, '#')">
-<xsl:value-of select="substring-after($url, '#')"/>
-</xsl:when>
-<!-- Local page with anchor. use anchor part -->
-<xsl:when test="contains($url, '#') and not(contains($url, '://'))">
-<xsl:value-of select="substring-after($url, '#')"/>
-</xsl:when>
-<!-- Other URLs. use URL processing -->
-<xsl:otherwise>
-<xsl:call-template name="generate-link-text-from-url">
-<xsl:with-param name="url" select="$url"/>
-</xsl:call-template>
-</xsl:otherwise>
-</xsl:choose>
-</xsl:when>
-<xsl:otherwise>
-<xsl:value-of select="$link-text"/>
-</xsl:otherwise>
-</xsl:choose>
-</xsl:variable>
-<xsl:choose>
-<!-- Same page jump link (#anchor) -->
-<xsl:when test="starts-with($url, '#')">
-<xsl:variable name="anchor-part" select="substring-after($url, '#')"/>
-<xsl:variable name="processed-anchor">
-<xsl:call-template name="make-wiki-url">
-<xsl:with-param name="text" select="$anchor-part"/>
-<xsl:with-param name="no-extension" select="true()"/>
-</xsl:call-template>
-</xsl:variable>
-<!-- Remove any '#' from link text -->
-<xsl:variable name="clean-link-text">
-<xsl:choose>
-<xsl:when test="starts-with($final-link-text, '#')">
-<xsl:value-of select="substring-after($final-link-text, '#')"/>
-</xsl:when>
-<xsl:otherwise>
-<xsl:value-of select="$final-link-text"/>
-</xsl:otherwise>
-</xsl:choose>
-</xsl:variable>
-<a href="#{$processed-anchor}" tabindex="0"><xsl:value-of select="$clean-link-text"/></a>
-</xsl:when>
-<!-- External URL (contains ://) -->
-<xsl:when test="contains($url, '://')">
-<a href="{$url}" tabindex="0"><xsl:value-of select="$final-link-text"/></a>
-</xsl:when>
-<!-- Literal file path (starts with / or ../) -->
-<xsl:when test="starts-with($url, '/') or starts-with($url, '../') or starts-with($url, './')">
-<a href="{$url}" tabindex="0"><xsl:value-of select="$final-link-text"/></a>
-</xsl:when>
-<!-- Different page with anchor (page.xml#anchor) -->
-<xsl:when test="contains($url, '#') and not(contains($url, '://'))">
-<xsl:variable name="page-part" select="substring-before($url, '#')"/>
-<xsl:variable name="anchor-part" select="substring-after($url, '#')"/>
-<xsl:variable name="processed-page">
-<xsl:call-template name="process-page-url">
-<xsl:with-param name="url" select="$page-part"/>
-</xsl:call-template>
-</xsl:variable>
-<xsl:variable name="processed-anchor">
-<xsl:call-template name="make-wiki-url">
-<xsl:with-param name="text" select="$anchor-part"/>
-<xsl:with-param name="no-extension" select="true()"/>
-</xsl:call-template>
-</xsl:variable>
-<!-- Add title attribute with page name -->
-<a href="{$processed-page}#{$processed-anchor}" title="{$page-part}" tabindex="0">
-<xsl:value-of select="$final-link-text"/>
-</a>
-</xsl:when>
-<!-- Local page (wiki-style processing) -->
-<xsl:otherwise>
-<xsl:variable name="processed-page">
-<xsl:call-template name="process-page-url">
-<xsl:with-param name="url" select="$url"/>
-</xsl:call-template>
-</xsl:variable>
-<a href="{$processed-page}" tabindex="0"><xsl:value-of select="$final-link-text"/></a>
-</xsl:otherwise>
-</xsl:choose>
-</xsl:template><!-- END -->
+
 <xsl:template name="process-page-url">
 <xsl:param name="url"/>
 <xsl:choose>
-<!-- Already has extension, just process case/spaces -->
 <xsl:when test="contains($url, '.')">
 <xsl:call-template name="make-wiki-url">
 <xsl:with-param name="text" select="substring-before($url, '.')"/>
@@ -1678,7 +1862,6 @@ process last to avoid conflicts with marked up links -->
 <xsl:text>.</xsl:text>
 <xsl:value-of select="substring-after($url, '.')"/>
 </xsl:when>
-<!-- lacks extension, add .xml and process -->
 <xsl:otherwise>
 <xsl:call-template name="make-wiki-url">
 <xsl:with-param name="text" select="$url"/>
@@ -1686,15 +1869,14 @@ process last to avoid conflicts with marked up links -->
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
+
 <xsl:template name="generate-link-text-from-url">
 <xsl:param name="url"/>
 <xsl:variable name="clean-url">
 <xsl:choose>
-<!-- Remove https:// -->
 <xsl:when test="starts-with($url, 'https://')">
 <xsl:value-of select="substring-after($url, 'https://')"/>
 </xsl:when>
-<!-- Remove http:// -->
 <xsl:when test="starts-with($url, 'http://')">
 <xsl:value-of select="substring-after($url, 'http://')"/>
 </xsl:when>
@@ -1714,18 +1896,15 @@ process last to avoid conflicts with marked up links -->
 </xsl:choose>
 </xsl:variable>
 <xsl:choose>
-<!-- get domain part (before / or #) -->
 <xsl:when test="contains($without-www, '/')">
 <xsl:value-of select="substring-before($without-www, '/')"/>
 </xsl:when>
 <xsl:when test="contains($without-www, '#')">
 <xsl:value-of select="substring-before($without-www, '#')"/>
 </xsl:when>
-<!-- Remove any .xml extension present -->
 <xsl:when test="substring($without-www, string-length($without-www) - 3) = '.xml'">
 <xsl:value-of select="substring($without-www, 1, string-length($without-www) - 4)"/>
 </xsl:when>
-<!-- Remove other extensions -->
 <xsl:when test="contains($without-www, '.')">
 <xsl:value-of select="substring-before($without-www, '.')"/>
 </xsl:when>
@@ -1734,28 +1913,25 @@ process last to avoid conflicts with marked up links -->
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
+
 <xsl:template name="process-raw-url">
 <xsl:param name="text"/>
 <xsl:param name="protocol"/>
 <xsl:variable name="before-url" select="substring-before($text, $protocol)"/>
 <xsl:variable name="url-and-after" select="substring-after($text, $protocol)"/>
-<!-- Check if this URL falls inside '[]' or '[[' (avoid double processing) -->
 <xsl:variable name="char-before">
 <xsl:if test="string-length($before-url) > 0">
 <xsl:value-of select="substring($before-url, string-length($before-url))"/>
 </xsl:if>
 </xsl:variable>
 <xsl:choose>
-<!-- Skip url inside Markdown link/wiki links -->
 <xsl:when test="$char-before = '(' or $char-before = ']'">
 <xsl:value-of select="$text"/>
 </xsl:when>
 <xsl:otherwise>
-<!-- Process text before URL -->
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="$before-url"/>
 </xsl:call-template>
-<!-- Extract raw URL (until space or end) -->
 <xsl:variable name="url-part">
 <xsl:choose>
 <xsl:when test="contains($url-and-after, ' ')">
@@ -1769,10 +1945,8 @@ process last to avoid conflicts with marked up links -->
 </xsl:otherwise>
 </xsl:choose>
 </xsl:variable>
-<!-- Create link -->
 <xsl:variable name="full-url" select="concat($protocol, $url-part)"/>
 <a href="{$full-url}" tabindex="0"><xsl:value-of select="$full-url"/></a>
-<!-- Process remaining text -->
 <xsl:variable name="after-url" select="substring-after($url-and-after, $url-part)"/>
 <xsl:if test="string-length($after-url) > 0">
 <xsl:call-template name="process-inline">
@@ -1782,45 +1956,21 @@ process last to avoid conflicts with marked up links -->
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
-<!-- Table processing templates -->
-<xsl:template name="collect-until-marker">
-<xsl:param name="text"/>
-<xsl:param name="marker"/>
-<xsl:choose>
-<xsl:when test="contains($text, $marker)">
-<xsl:value-of select="substring-before($text, $marker)"/>
-</xsl:when>
-<xsl:otherwise>
-<xsl:value-of select="$text"/>
-</xsl:otherwise>
-</xsl:choose>
-</xsl:template>
-<xsl:template name="skip-until-after-marker">
-<xsl:param name="text"/>
-<xsl:param name="marker"/>
-<xsl:choose>
-<xsl:when test="contains($text, $marker)">
-<xsl:value-of select="substring-after($text, $marker)"/>
-</xsl:when>
-<xsl:otherwise>
-<xsl:value-of select="''"/>
-</xsl:otherwise>
-</xsl:choose>
-</xsl:template>
+
+<!-- Table processing -->
 <xsl:template name="parse-table-content">
 <xsl:param name="content"/>
-<!-- Remove outer brackets and whitespace -->
 <xsl:variable name="trimmed">
 <xsl:call-template name="trim-table-content">
 <xsl:with-param name="text" select="normalize-space($content)"/>
 </xsl:call-template>
 </xsl:variable>
-<!-- Process rows -->
 <xsl:call-template name="parse-table-rows">
 <xsl:with-param name="text" select="$trimmed"/>
 <xsl:with-param name="is-first" select="true()"/>
 </xsl:call-template>
 </xsl:template>
+
 <xsl:template name="trim-table-content">
 <xsl:param name="text"/>
 <xsl:variable name="no-leading-bracket">
@@ -1842,11 +1992,11 @@ process last to avoid conflicts with marked up links -->
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
+
 <xsl:template name="parse-table-rows">
 <xsl:param name="text"/>
 <xsl:param name="is-first"/>
 <xsl:if test="contains($text, '[') and contains($text, ']')">
-<!-- Extract one row -->
 <xsl:variable name="before-row" select="substring-before($text, '[')"/>
 <xsl:variable name="after-bracket" select="substring-after($text, '[')"/>
 <xsl:variable name="row-content">
@@ -1856,34 +2006,30 @@ process last to avoid conflicts with marked up links -->
 </xsl:call-template>
 </xsl:variable>
 <xsl:variable name="after-row" select="substring-after($after-bracket, ']')"/>
-<!-- Process the row -->
 <tr>
 <xsl:call-template name="parse-table-cells">
 <xsl:with-param name="text" select="$row-content"/>
 <xsl:with-param name="is-header" select="$is-first"/>
 </xsl:call-template>
 </tr>
-<!-- Continue with remaining rows -->
 <xsl:call-template name="parse-table-rows">
 <xsl:with-param name="text" select="$after-row"/>
 <xsl:with-param name="is-first" select="false()"/>
 </xsl:call-template>
 </xsl:if>
 </xsl:template>
+
 <xsl:template name="substring-before-unquoted">
 <xsl:param name="text"/>
 <xsl:param name="delim"/>
 <xsl:param name="in-string" select="false()"/>
 <xsl:choose>
-<!-- End of text -->
 <xsl:when test="string-length($text)=0">
 <xsl:value-of select="''"/>
 </xsl:when>
-<!-- Look at first character -->
 <xsl:otherwise>
 <xsl:variable name="first" select="substring($text,1,1)"/>
 <xsl:variable name="rest" select="substring($text,2)"/>
-<!-- Toggle string state on quote -->
 <xsl:choose>
 <xsl:when test="$first='&quot;'">
 <xsl:value-of select="$first"/>
@@ -1893,11 +2039,8 @@ process last to avoid conflicts with marked up links -->
 <xsl:with-param name="in-string" select="not($in-string)"/>
 </xsl:call-template>
 </xsl:when>
-<!-- Found delimiter outside string -->
 <xsl:when test="not($in-string) and $first=$delim">
-<!-- stop before delim -->
 </xsl:when>
-<!-- Otherwise keep scanning -->
 <xsl:otherwise>
 <xsl:value-of select="$first"/>
 <xsl:call-template name="substring-before-unquoted">
@@ -1910,6 +2053,7 @@ process last to avoid conflicts with marked up links -->
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
+
 <xsl:template name="parse-table-cells">
 <xsl:param name="text"/>
 <xsl:param name="is-header"/>
@@ -1934,7 +2078,6 @@ process last to avoid conflicts with marked up links -->
 </td>
 </xsl:otherwise>
 </xsl:choose>
-<!-- Continue if more cells -->
 <xsl:if test="contains($after-cell, '&quot;')">
 <xsl:call-template name="parse-table-cells">
 <xsl:with-param name="text" select="$after-cell"/>
@@ -1943,30 +2086,26 @@ process last to avoid conflicts with marked up links -->
 </xsl:if>
 </xsl:if>
 </xsl:template>
+
 <xsl:template name="process-smart-cell-content">
 <xsl:param name="content"/>
-<!-- Pre-process: convert JSON escape sequences to characters -->
 <xsl:variable name="processed-content">
 <xsl:call-template name="unescape-json-string">
 <xsl:with-param name="text" select="$content"/>
 </xsl:call-template>
 </xsl:variable>
-<!-- Check for paragraph breaks in the processed content -->
 <xsl:choose>
 <xsl:when test="contains($processed-content, '&#10;&#10;')">
-<!-- Multi-paragraph content -->
 <xsl:call-template name="process-content">
 <xsl:with-param name="text" select="$processed-content"/>
 <xsl:with-param name="enable-sections" select="false()"/>
 </xsl:call-template>
 </xsl:when>
-<!-- Content with single line breaks -->
 <xsl:when test="contains($processed-content, '&#10;')">
 <xsl:call-template name="process-lines-with-breaks">
 <xsl:with-param name="text" select="$processed-content"/>
 </xsl:call-template>
 </xsl:when>
-<!-- Single line with no breaks - only apply inline formatting -->
 <xsl:otherwise>
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="normalize-space($processed-content)"/>
@@ -1974,26 +2113,21 @@ process last to avoid conflicts with marked up links -->
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
+
 <xsl:template name="process-lines-with-breaks">
 <xsl:param name="text"/>
 <xsl:choose>
 <xsl:when test="contains($text, '&#10;')">
-<!-- Get the current line -->
 <xsl:variable name="current-line" select="substring-before($text, '&#10;')"/>
-<!-- Get the rest of the text -->
 <xsl:variable name="remaining" select="substring-after($text, '&#10;')"/>
-<!-- Process the current line -->
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="normalize-space($current-line)"/>
 </xsl:call-template>
-<!-- Add a space to join lines (not <br/>) -->
 <xsl:text> </xsl:text>
-<!-- Process the rest -->
 <xsl:call-template name="process-lines-with-breaks">
 <xsl:with-param name="text" select="$remaining"/>
 </xsl:call-template>
 </xsl:when>
-<!-- Last line or no more breaks -->
 <xsl:otherwise>
 <xsl:call-template name="process-inline">
 <xsl:with-param name="text" select="normalize-space($text)"/>
@@ -2001,47 +2135,37 @@ process last to avoid conflicts with marked up links -->
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
+
 <xsl:template name="unescape-json-string">
 <xsl:param name="text"/>
 <xsl:choose>
-<!-- \n to  newline -->
 <xsl:when test="contains($text, '\n')">
 <xsl:call-template name="unescape-json-string">
 <xsl:with-param name="text" select="concat(substring-before($text, '\n'), '&#10;', substring-after($text, '\n'))"/>
 </xsl:call-template>
 </xsl:when>
-<!-- \r to  carriage return -->
 <xsl:when test="contains($text, '\r')">
 <xsl:call-template name="unescape-json-string">
 <xsl:with-param name="text" select="concat(substring-before($text, '\r'), '&#13;', substring-after($text, '\r'))"/>
 </xsl:call-template>
 </xsl:when>
-<!-- \t to tab -->
 <xsl:when test="contains($text, '\t')">
 <xsl:call-template name="unescape-json-string">
 <xsl:with-param name="text" select="concat(substring-before($text, '\t'), '&#9;', substring-after($text, '\t'))"/>
 </xsl:call-template>
 </xsl:when>
-<!-- '\\' to '\' -->
 <xsl:when test="contains($text, '\\')">
 <xsl:call-template name="unescape-json-string">
 <xsl:with-param name="text" select="concat(substring-before($text, '\\'), '\', substring-after($text, '\\'))"/>
 </xsl:call-template>
 </xsl:when>
-<!-- No more escape sequences -->
 <xsl:otherwise>
 <xsl:value-of select="$text"/>
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
-<!-- Error handling -->
-<xsl:template match="*">
-<div class="markdown-error">
-<p>Error processing Markdown content</p>
-<pre><xsl:value-of select="."/></pre>
-</div>
-</xsl:template>
-<!-- Helper template for proper slug generation -->
+
+<!-- Utilities -->
 <xsl:template name="clean-slug">
 <xsl:param name="text"/>
 <xsl:variable name="lowercase" select="translate($text, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')"/>
@@ -2055,7 +2179,7 @@ process last to avoid conflicts with marked up links -->
 <xsl:with-param name="text" select="$with-single-dashes"/>
 </xsl:call-template>
 </xsl:template>
-<!-- Collapse multiple dashes to single dash -->
+
 <xsl:template name="collapse-dashes">
 <xsl:param name="text"/>
 <xsl:choose>
@@ -2069,7 +2193,7 @@ process last to avoid conflicts with marked up links -->
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
-<!-- Remove leading and trailing dashes -->
+
 <xsl:template name="trim-dashes">
 <xsl:param name="text"/>
 <xsl:variable name="no-leading">
@@ -2093,19 +2217,18 @@ process last to avoid conflicts with marked up links -->
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
-<!-- Serialize mixed content to text with HTML markers (and remove YAML) -->
+
+<!-- Mixed HTML content -->
 <xsl:template name="serialize-mixed-content">
 <xsl:param name="nodes"/>
 <xsl:for-each select="$nodes">
 <xsl:choose>
 <xsl:when test="self::text()">
-<!-- Remove YAML frontmatter from text nodes -->
 <xsl:call-template name="remove-yaml-frontmatter">
 <xsl:with-param name="text" select="."/>
 </xsl:call-template>
 </xsl:when>
 <xsl:when test="name() = 'html'">
-<!-- Create a placeholder with display mode -->
 <xsl:text>&#10;__HTML_BLOCK_</xsl:text>
 <xsl:value-of select="generate-id(.)"/>
 <xsl:text>_</xsl:text>
@@ -2118,7 +2241,6 @@ process last to avoid conflicts with marked up links -->
 <xsl:text>__&#10;</xsl:text>
 </xsl:when>
 <xsl:otherwise>
-<!-- Handle other elements if needed -->
 <xsl:call-template name="serialize-mixed-content">
 <xsl:with-param name="nodes" select="node()"/>
 </xsl:call-template>
@@ -2126,13 +2248,12 @@ process last to avoid conflicts with marked up links -->
 </xsl:choose>
 </xsl:for-each>
 </xsl:template>
-<!-- Process text that may contain HTML block markers -->
+
 <xsl:template name="process-mixed-text">
 <xsl:param name="text"/>
 <xsl:param name="enable-sections" select="false()"/>
 <xsl:choose>
 <xsl:when test="contains($text, '__HTML_BLOCK_')">
-<!-- Process text before HTML block -->
 <xsl:variable name="before-html" select="substring-before($text, '__HTML_BLOCK_')"/>
 <xsl:if test="normalize-space($before-html) != ''">
 <xsl:call-template name="process-content">
@@ -2140,16 +2261,13 @@ process last to avoid conflicts with marked up links -->
 <xsl:with-param name="enable-sections" select="$enable-sections"/>
 </xsl:call-template>
 </xsl:if>
-<!-- Extract block ID and display mode -->
 <xsl:variable name="after-marker" select="substring-after($text, '__HTML_BLOCK_')"/>
 <xsl:variable name="id-and-mode" select="substring-before($after-marker, '__')"/>
 <xsl:variable name="block-id" select="substring-before($id-and-mode, '_')"/>
 <xsl:variable name="display-mode" select="substring-after($id-and-mode, '_')"/>
 <xsl:variable name="html-element" select="/*/html[generate-id(.) = $block-id]"/>
-<!-- Output based on display mode -->
 <xsl:choose>
 <xsl:when test="$display-mode = 'code'">
-  <!-- Show as code block -->
   <pre><code>
     <xsl:variable name="html-content">
       <xsl:call-template name="serialize-html-content">
@@ -2159,12 +2277,10 @@ process last to avoid conflicts with marked up links -->
     <xsl:variable name="first-non-blank" 
                   select="string-length(substring-before($html-content, 
                           substring(normalize-space($html-content), 1, 1))) + 1"/>
-    <!-- Output from that point -->
     <xsl:value-of select="substring($html-content, $first-non-blank)"/>
   </code></pre>
 </xsl:when>
 <xsl:when test="$display-mode = 'both'">
-<!-- Show code first, then rendered -->
 <pre><code><xsl:call-template name="serialize-html-content">
 <xsl:with-param name="nodes" select="$html-element/node()"/>
 </xsl:call-template></code></pre>
@@ -2173,11 +2289,9 @@ process last to avoid conflicts with marked up links -->
 </div>
 </xsl:when>
 <xsl:otherwise>
-<!-- Default: render HTML -->
 <xsl:copy-of select="$html-element/node()"/>
 </xsl:otherwise>
 </xsl:choose>
-<!-- Process remaining text -->
 <xsl:variable name="remaining" select="substring-after($after-marker, '__')"/>
 <xsl:if test="normalize-space($remaining) != ''">
 <xsl:call-template name="process-mixed-text">
@@ -2187,7 +2301,6 @@ process last to avoid conflicts with marked up links -->
 </xsl:if>
 </xsl:when>
 <xsl:otherwise>
-<!-- No HTML blocks, process as normal -->
 <xsl:call-template name="process-content">
 <xsl:with-param name="text" select="$text"/>
 <xsl:with-param name="enable-sections" select="$enable-sections"/>
@@ -2195,7 +2308,7 @@ process last to avoid conflicts with marked up links -->
 </xsl:otherwise>
 </xsl:choose>
 </xsl:template>
-<!-- Serialize HTML content back to text -->
+
 <xsl:template name="serialize-html-content">
 <xsl:param name="nodes"/>
 <xsl:for-each select="$nodes">
@@ -2224,4 +2337,12 @@ process last to avoid conflicts with marked up links -->
 </xsl:choose>
 </xsl:for-each>
 </xsl:template>
+
+<xsl:template match="*">
+<div class="markdown-error">
+<p>Error processing Markdown content</p>
+<pre><xsl:value-of select="."/></pre>
+</div>
+</xsl:template>
+
 </xsl:stylesheet>
